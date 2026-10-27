@@ -6,7 +6,7 @@ import LoginPage from './pages/LoginPage'
 export default function App() {
   const user = useAuth()
 
-  if (user === undefined) return <main className="center">Loading...</main>
+  if (user === undefined) return <main className="flex min-h-screen items-center justify-center">Loading...</main>
 
   if (!user) {
     return (
@@ -19,9 +19,11 @@ export default function App() {
 
   if (!user.role) {
     return (
-      <main className="center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3">
         <p>{user.email} does not have access to HQ.</p>
-        <button onClick={logout}>Sign out</button>
+        <button className="rounded border px-4 py-2 hover:bg-gray-50" onClick={logout}>
+          Sign out
+        </button>
       </main>
     )
   }
