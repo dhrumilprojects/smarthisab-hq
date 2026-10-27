@@ -1,0 +1,28 @@
+// Add these inside `match /databases/{database}/documents { ... }` in your Firestore rules.
+// Firestore allows a request if ANY matching rule allows it, so these add HQ access
+// without changing what the mobile app's own rules allow.
+
+// True when the signed-in Google account is on the HQ whitelist
+function isHqUser() {
+  return request.auth != null
+    && request.auth.token.email_verified == true
+    && exists(/databases/$(database)/documents/hq_users/$(request.auth.token.email.lower()));
+}
+
+// HQ whitelist: each person can only check their own entry. Nobody can write from the app.
+match /hq_users/{email} {
+  allow read: if request.auth != null
+    && request.auth.token.email_verified == true
+    && request.auth.token.email.lower() == email;
+  allow write: if false;
+}
+
+// HQ can read registered users (needed for the user count on the dashboard)
+match /users/{userId} {
+  allow read: if isHqUser();
+}
+
+// HQ can read subscriptions (trial and paid counts, trials ending soon)
+match /subscriptions/{userId} {
+  allow read: if isHqUser();
+}

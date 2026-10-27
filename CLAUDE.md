@@ -17,8 +17,15 @@ Firebase config lives in `.env` (see `.env.example`).
 
 ## Styling
 
-- Use Tailwind classes only. No CSS files, CSS modules, inline styles or other CSS libraries.
+- Use Tailwind classes only. No CSS files, CSS modules or other CSS libraries.
+- Inline `style` only for values computed at runtime (e.g. chart bar heights).
 - Theme changes go in `src/index.css` with `@theme` (no `tailwind.config.js`).
+
+## Auth
+
+- Google sign-in only. HQ shares the Firebase project with the mobile app, so sign-ups can't be disabled project-wide.
+- Access is a whitelist: a Firestore doc at `hq_users/{lowercase email}` with `{ role: 'admin' | 'support' | 'sales' }`.
+- Accounts not on the whitelist are signed out right away. HQ Firestore rules live in `firebase/hq.rules` and composite indexes in `firebase/firestore.indexes.json`. Any new collection or multi-field query HQ uses needs an entry there.
 
 ## Data layer
 
@@ -44,6 +51,14 @@ src/
 - Filters are plain objects (`{ status: 'open' }`). Pagination uses a string `cursor`.
 - Real-time updates use `subscribe(filter, callback) => unsubscribe`.
 - Sensitive writes go through Cloud Functions.
+
+## Commits
+
+One-line messages with a prefix:
+
+- `feat:` new feature
+- `enhancement:` improvement to something that exists
+- `fix:` bug fix
 
 ## Keep it simple
 

@@ -1,12 +1,19 @@
 import { Navigate, Route, Routes } from 'react-router'
-import { logout, useAuth } from './auth/auth'
-import HomePage from './pages/HomePage'
+import { useAuth } from './auth/auth'
+import AppLayout from './components/AppLayout'
+import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 
 export default function App() {
   const user = useAuth()
 
-  if (user === undefined) return <main className="flex min-h-screen items-center justify-center">Loading...</main>
+  if (user === undefined) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <div className="size-8 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
+      </main>
+    )
+  }
 
   if (!user) {
     return (
@@ -17,20 +24,11 @@ export default function App() {
     )
   }
 
-  if (!user.role) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3">
-        <p>{user.email} does not have access to HQ.</p>
-        <button className="rounded border px-4 py-2 hover:bg-gray-50" onClick={logout}>
-          Sign out
-        </button>
-      </main>
-    )
-  }
-
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<DashboardPage />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
