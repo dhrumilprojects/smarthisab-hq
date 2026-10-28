@@ -1,4 +1,5 @@
-import type { DailyCount } from '../data/types'
+import Card from '../../components/ui/Card'
+import type { DailyCount } from '../../data/types'
 
 type Props = {
   data: DailyCount[] | undefined
@@ -15,7 +16,7 @@ export default function SignupsChart({ data, loading, error }: Props) {
   const top = Math.max(4, Math.ceil(Math.max(0, ...(data ?? []).map((d) => d.count)) / 4) * 4)
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
+    <Card padded>
       <div className="flex items-start justify-between">
         <div>
           <h2 className="font-semibold text-gray-900">Signups</h2>
@@ -82,6 +83,6 @@ export default function SignupsChart({ data, loading, error }: Props) {
           </table>
         </>
       )}
-    </div>
+    </Card>
   )
 }

@@ -1,9 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { useAuth } from './auth/auth'
-import AppLayout from './components/AppLayout'
-import DashboardPage from './pages/DashboardPage'
-import LoginPage from './pages/LoginPage'
-import UsersPage from './pages/UsersPage'
+import AppLayout from './components/layout/AppLayout'
+import DashboardPage from './features/dashboard/DashboardPage'
+import LoginPage from './features/login/LoginPage'
+import UsersPage from './features/users/UsersPage'
 
 export default function App() {
   const user = useAuth()

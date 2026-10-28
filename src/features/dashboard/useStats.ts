@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { statsRepo, subscriptionsRepo } from '../data'
+import { statsRepo, subscriptionsRepo } from '../../data'
 
 export function useTotalUsers() {
   return useQuery({ queryKey: ['stats', 'totalUsers'], queryFn: statsRepo.getTotalUsers })

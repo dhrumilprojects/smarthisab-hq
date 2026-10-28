@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { login } from '../auth/auth'
+import { login } from '../../auth/auth'
 
 export default function LoginPage() {
   const [error, setError] = useState('')

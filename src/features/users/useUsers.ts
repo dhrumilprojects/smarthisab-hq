@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { usersRepo } from '../data'
+import { usersRepo } from '../../data'
 
 export function useUsers(cursor?: string) {
   return useQuery({

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import Card from '../../components/ui/Card'
 
 type Props = {
   label: string
@@ -10,7 +11,7 @@ type Props = {
 
 export default function StatCard({ label, value, icon, loading, error }: Props) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
+    <Card padded>
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-gray-500">{label}</p>
         <div className="flex size-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">{icon}</div>
@@ -23,6 +24,6 @@ export default function StatCard({ label, value, icon, loading, error }: Props) 
       ) : (
         <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{value?.toLocaleString('en-IN')}</p>
       )}
-    </div>
+    </Card>
   )
 }

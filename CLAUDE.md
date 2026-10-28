@@ -41,8 +41,12 @@ src/
     firebase/         # Firebase implementations
     index.ts          # picks the implementation
   auth/               # login, logout, current user + role
-  hooks/
-  pages/
+  components/
+    ui/               # shared, data-free: Button, Badge, Avatar, Input, Table, Pagination, ConfirmDialog
+    layout/           # page shells: AppLayout, Sidebar
+  features/
+    users/            # UsersPage, UsersTable, useUsers
+    tickets/          # one folder per feature: its pages, components and hooks
 ```
 
 - Only `src/data/firebase/` and `src/auth/` import `firebase`.
@@ -51,6 +55,17 @@ src/
 - Filters are plain objects (`{ status: 'open' }`). Pagination uses a string `cursor`.
 - Real-time updates use `subscribe(filter, callback) => unsubscribe`.
 - Sensitive writes go through Cloud Functions.
+
+## Components
+
+Build small to big: a few solid `ui/` pieces, then feature components made from them.
+
+- `components/ui/` never imports hooks, repos or business types. Data comes in as props, actions go out as callbacks.
+- Keep props few and simple. Pass content as `children` instead of adding a prop per variation.
+- Styles live inside the component. For differences, add a small variant prop (`variant="danger"`), don't override classes from outside.
+- Every data view handles loading, error, empty and data.
+- Copy-paste is fine once. Move to `ui/` when a second feature needs it.
+- Code used by one feature stays in its `features/` folder.
 
 ## Commits
 

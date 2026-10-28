@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useAuth } from '../auth/auth'
-import SignupsChart from '../components/SignupsChart'
-import StatCard from '../components/StatCard'
-import TrialsEndingList from '../components/TrialsEndingList'
+import { useAuth } from '../../auth/auth'
+import PageHeader from '../../components/ui/PageHeader'
+import SignupsChart from './SignupsChart'
+import StatCard from './StatCard'
+import TrialsEndingList from './TrialsEndingList'
 import {
   useNewUsersThisMonth,
   usePaidSubscribers,
@@ -10,7 +11,7 @@ import {
   useTotalUsers,
   useTrialsEnding,
   useUsersOnTrial,
-} from '../hooks/useStats'
+} from './useStats'
 
 export default function DashboardPage() {
   const user = useAuth()
@@ -23,12 +24,11 @@ export default function DashboardPage() {
   const trialsEnding = useTrialsEnding(7)
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Good {hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'}, {user?.name.split(' ')[0]}. Here's how
-        Smart Hisaab is doing.
-      </p>
+    <>
+      <PageHeader
+        title="Dashboard"
+        description={`Good ${hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'}, ${user?.name.split(' ')[0]}. Here's how Smart Hisaab is doing.`}
+      />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -88,8 +88,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <SignupsChart data={signups.data} loading={signups.isPending} error={signups.isError} />
         </div>
-        <TrialsEndingList users={trialsEnding.data} loading={trialsEnding.isPending} error={trialsEnding.isError} />
+        <TrialsEndingList users={trialsEnding.data} error={trialsEnding.isError} />
       </div>
-    </div>
+    </>
   )
 }
