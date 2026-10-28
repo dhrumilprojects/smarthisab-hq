@@ -17,7 +17,7 @@ match /hq_users/{email} {
   allow write: if false;
 }
 
-// HQ can read registered users (needed for the user count on the dashboard)
+// HQ can read registered users (dashboard counts and the users list)
 match /users/{userId} {
   allow read: if isHqUser();
 }
