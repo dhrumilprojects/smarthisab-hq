@@ -1,0 +1,2 @@
+# Internal and test accounts left out of the baseline, one email or user ID per line.
+# HQ staff (hq_users) are excluded automatically.

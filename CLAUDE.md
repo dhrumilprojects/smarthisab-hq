@@ -50,6 +50,7 @@ src/
 ```
 
 - Only `src/data/firebase/` and `src/auth/` import `firebase`.
+- `scripts/` holds standalone Node analytics scripts that use `firebase-admin`. They are read-only and are never imported by the app.
 - Pages use hooks only, never repos or Firestore.
 - Return plain objects, `Date`s and string IDs. Never Firebase types.
 - Filters are plain objects (`{ status: 'open' }`). Pagination uses a string `cursor`.
