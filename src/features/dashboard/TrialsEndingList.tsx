@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Avatar from '../../components/ui/Avatar'
+import Badge from '../../components/ui/Badge'
 import Card from '../../components/ui/Card'
 import LoadState from '../../components/ui/LoadState'
 import type { TrialEndingUser } from '../../data/types'
@@ -37,13 +38,9 @@ export default function TrialsEndingList({ users, error }: Props) {
                     <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
                     <p className="truncate text-xs text-gray-500">{user.phone ?? user.email}</p>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      daysLeft <= 2 ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
+                  <Badge tone={daysLeft <= 2 ? 'warning' : 'neutral'}>
                     {daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
-                  </span>
+                  </Badge>
                   {user.phone && (
                     <a
                       href={`tel:${user.phone}`}

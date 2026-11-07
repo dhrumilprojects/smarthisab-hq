@@ -17,6 +17,8 @@ export type User = {
   email: string
   phone: string | null
   createdAt: Date | null
+  // null when the user has no subscription doc. Expired when endsAt is in the past.
+  subscription: { plan: 'trial' | 'paid'; endsAt: Date } | null
 }
 
 export type UsersPage = {

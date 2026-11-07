@@ -6,7 +6,7 @@ import PageHeader from '../../components/ui/PageHeader'
 import Pagination from '../../components/ui/Pagination'
 import type { User } from '../../data/types'
 import { useTotalUsers } from '../dashboard/useStats'
-import { useDeleteUser, useUsers } from './useUsers'
+import { useDeleteUser, useListedUserCount, useUsers } from './useUsers'
 import UsersTable from './UsersTable'
 
 const PAGE_SIZE = 25
@@ -17,6 +17,7 @@ export default function UsersPage() {
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined])
   const { data, isError, isPlaceholderData } = useUsers(cursors[cursors.length - 1])
   const totalUsers = useTotalUsers()
+  const listedUsers = useListedUserCount()
   const deleteUser = useDeleteUser()
   const page = cursors.length
 
@@ -62,13 +63,20 @@ export default function UsersPage() {
         <div className="mt-4">
           <Pagination
             page={page}
-            totalPages={totalUsers.data === undefined ? undefined : Math.max(1, Math.ceil(totalUsers.data / PAGE_SIZE))}
+            totalPages={listedUsers.data === undefined ? undefined : Math.max(1, Math.ceil(listedUsers.data / PAGE_SIZE))}
             hasNext={data.nextCursor !== null}
             loading={isPlaceholderData}
             onPrev={() => setCursors(cursors.slice(0, -1))}
             onNext={() => data.nextCursor && setCursors([...cursors, data.nextCursor])}
           />
         </div>
+      )}
+
+      {totalUsers.data !== undefined && listedUsers.data !== undefined && totalUsers.data > listedUsers.data && (
+        <p className="mt-4 text-sm text-amber-700">
+          {totalUsers.data - listedUsers.data} of {totalUsers.data} users have no sign-up date, so they aren't listed
+          here.
+        </p>
       )}
     </>
   )

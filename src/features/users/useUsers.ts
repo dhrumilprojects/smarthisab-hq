@@ -10,6 +10,10 @@ export function useUsers(cursor?: string) {
   })
 }
 
+export function useListedUserCount() {
+  return useQuery({ queryKey: ['users', 'listedCount'], queryFn: usersRepo.countListedUsers })
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient()
   return useMutation({
