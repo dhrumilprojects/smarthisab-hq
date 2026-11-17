@@ -26,3 +26,30 @@ match /users/{userId} {
 match /subscriptions/{userId} {
   allow read: if isHqUser();
 }
+
+// HQ can read what each user has added, for the user panel's Activity tab (SMA-40).
+// The panel only shows record types, categories, project names and times, never amounts or people's names,
+// but Firestore rules can't limit fields on a read, so the whole doc is readable.
+match /projects/{id} {
+  allow read: if isHqUser();
+}
+match /expenses/{id} {
+  allow read: if isHqUser();
+}
+match /payments/{id} {
+  allow read: if isHqUser();
+}
+match /vendors/{id} {
+  allow read: if isHqUser();
+}
+match /labours/{id} {
+  allow read: if isHqUser();
+}
+
+// HQ can read plan payments and checkouts, for plan events in the Activity tab
+match /payment_history/{id} {
+  allow read: if isHqUser();
+}
+match /payment_orders/{id} {
+  allow read: if isHqUser();
+}

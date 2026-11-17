@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router'
 import { useAuth } from '../../auth/auth'
 import Card from '../../components/ui/Card'
 import LoadState from '../../components/ui/LoadState'
@@ -7,6 +8,7 @@ import Pagination from '../../components/ui/Pagination'
 import type { User } from '../../data/types'
 import { useTotalUsers } from '../dashboard/useStats'
 import { useDeleteUser, useListedUserCount, useUsers } from './useUsers'
+import UserPanel from './UserPanel'
 import UsersTable from './UsersTable'
 
 const PAGE_SIZE = 25
@@ -20,6 +22,23 @@ export default function UsersPage() {
   const listedUsers = useListedUserCount()
   const deleteUser = useDeleteUser()
   const page = cursors.length
+  // The open user's panel lives in the URL (/users?user=<id>), so links open it and Back closes it
+  const [searchParams, setSearchParams] = useSearchParams()
+  const openUserId = searchParams.get('user')
+  const location = useLocation()
+  const navigate = useNavigate()
+  // True when this page opened the panel, so going back lands on the list
+  const openedHere = location.state?.panel === true
+
+  function openUser(user: User) {
+    // Swapping users replaces the history entry, so one Back still closes the panel
+    setSearchParams({ user: user.id }, { replace: openUserId !== null, state: { panel: true } })
+  }
+
+  function closeUser() {
+    if (openedHere) navigate(-1)
+    else setSearchParams({}, { replace: true })
+  }
 
   function confirmDelete(user: User) {
     const confirmed = window.confirm(
@@ -51,6 +70,8 @@ export default function UsersPage() {
             {(users) => (
               <UsersTable
                 users={users}
+                onOpen={openUser}
+                selectedId={openUserId ?? undefined}
                 onDelete={isAdmin ? confirmDelete : undefined}
                 deletingId={deleteUser.isPending ? deleteUser.variables : undefined}
               />
@@ -78,6 +99,8 @@ export default function UsersPage() {
           here.
         </p>
       )}
+
+      {openUserId && <UserPanel userId={openUserId} onClose={closeUser} />}
     </>
   )
 }

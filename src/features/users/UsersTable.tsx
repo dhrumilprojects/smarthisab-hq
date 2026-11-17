@@ -1,39 +1,35 @@
 import { useState } from 'react'
 import Avatar from '../../components/ui/Avatar'
-import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Table from '../../components/ui/Table'
 import type { User } from '../../data/types'
+import SubscriptionBadge from './SubscriptionBadge'
 
 type Props = {
   users: User[]
+  onOpen: (user: User) => void
+  // User whose panel is open
+  selectedId?: string
   // Leave out to hide the delete column
   onDelete?: (user: User) => void
   // User currently being deleted. Other delete buttons are disabled meanwhile.
   deletingId?: string
 }
 
-function SubscriptionBadge({ subscription, now }: { subscription: User['subscription']; now: number }) {
-  if (!subscription) return <Badge>No subscription</Badge>
-
-  const plan = subscription.plan === 'paid' ? 'Paid' : 'Trial'
-  const daysLeft = Math.ceil((subscription.endsAt.getTime() - now) / (24 * 60 * 60 * 1000))
-  if (daysLeft <= 0) return <Badge tone="danger">{plan} expired</Badge>
-
-  return (
-    <Badge tone={daysLeft <= 7 ? 'warning' : subscription.plan === 'paid' ? 'success' : 'neutral'}>
-      {plan} · {daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
-    </Badge>
-  )
-}
-
-export default function UsersTable({ users, onDelete, deletingId }: Props) {
+export default function UsersTable({ users, onOpen, selectedId, onDelete, deletingId }: Props) {
   const [now] = useState(Date.now)
 
   return (
     <Table columns={['Name', 'Subscription', 'Email', 'Phone', 'Joined', ...(onDelete ? [''] : [])]}>
       {users.map((user) => (
-        <tr key={user.id} className="hover:bg-gray-50">
+        <tr
+          key={user.id}
+          // Clicking a row while the panel is open swaps it to this user instead of closing it
+          data-panel-trigger
+          // Links and buttons in the row do their own thing
+          onClick={(event) => !(event.target as Element).closest('a, button') && onOpen(user)}
+          className={`cursor-pointer ${user.id === selectedId ? 'bg-brand-50' : 'hover:bg-gray-50'}`}
+        >
           <td className="px-5 py-3">
             <div className="flex items-center gap-3">
               <Avatar name={user.name} />

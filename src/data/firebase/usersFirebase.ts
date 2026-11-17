@@ -9,13 +9,14 @@ import {
   orderBy,
   query,
   startAfter,
-  Timestamp,
   where,
 } from 'firebase/firestore'
 import { httpsCallable } from 'firebase/functions'
 import { z } from 'zod'
 import type { UsersRepo } from '../users'
+import { getUserActivity, getUserActivitySummary } from './activityFirebase'
 import { db, functions } from './app'
+import { toSubscription } from './subscription'
 
 const PAGE_SIZE = 25
 
@@ -26,21 +27,16 @@ const userSchema = z.object({
   createdAt: z.string().optional(),
 })
 
-const subscriptionSchema = z.object({
-  status: z.enum(['trial', 'active', 'expired']).optional(),
-  trialEndDate: z.instanceof(Timestamp).optional(),
-  subscriptionEndDate: z.instanceof(Timestamp).optional(),
-})
+// Labels saved by older app versions
+const LEGACY_PROFESSIONS: Record<string, string> = { Electricians: 'Electrician', Civil: 'Civil contractor' }
 
-// The app only sets status 'expired' when the user opens it, so the end date decides expiry.
-// Expired subscriptions count as paid if they ever had a paid end date.
-function toSubscription(data: unknown) {
-  const subscription = subscriptionSchema.catch({}).parse(data)
-  const paidEnd = subscription.status !== 'trial' && subscription.subscriptionEndDate
-  const endsAt = paidEnd || subscription.trialEndDate
-  if (!endsAt) return null
-  return { plan: paidEnd ? ('paid' as const) : ('trial' as const), endsAt: endsAt.toDate() }
-}
+const detailSchema = userSchema.extend({
+  profession: z.string().optional(),
+  // What the user typed after picking "Other"
+  otherProfession: z.string().optional(),
+  // Missing for users who signed up before the tour existed
+  onboardingTour: z.enum(['project', 'expense', 'income', 'review', 'done', 'skipped']).optional().catch(undefined),
+})
 
 export const firebaseUsersRepo: UsersRepo = {
   // The cursor is the last user's doc ID. Fetches one extra user to know if there's a next page.
@@ -90,4 +86,30 @@ export const firebaseUsersRepo: UsersRepo = {
   async deleteUser(id) {
     await httpsCallable(functions, 'hqDeleteUser')({ userId: id })
   },
+
+  async getUserDetail(id) {
+    const [userDoc, subscription] = await Promise.all([
+      getDoc(doc(db, 'users', id)),
+      getDoc(doc(db, 'subscriptions', id)),
+    ])
+    if (!userDoc.exists()) return null
+
+    const user = detailSchema.catch({}).parse(userDoc.data())
+    const profession = user.profession && (LEGACY_PROFESSIONS[user.profession] ?? user.profession)
+    return {
+      id,
+      name: user.name || 'Unnamed user',
+      email: user.email ?? '',
+      phone: user.phoneNumber || null,
+      profession: (profession === 'Other' && user.otherProfession) || profession || null,
+      createdAt: user.createdAt ? new Date(user.createdAt) : null,
+      subscription: toSubscription(subscription.data()),
+      tourStep: user.onboardingTour ?? null,
+      // Same check the app uses to stop asking for profile details
+      profileComplete: Boolean(user.name?.trim() && user.phoneNumber && user.profession),
+    }
+  },
+
+  getUserActivitySummary,
+  getUserActivity,
 }
