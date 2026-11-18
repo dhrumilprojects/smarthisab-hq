@@ -135,7 +135,7 @@ function Line({ entries }: { entries: ActivityEntry[] }) {
         <span className="font-medium text-gray-900">
           {entries.length} {PLURALS[first.kind]} added between {formatTime(earliest.at)} and {formatTime(first.at)}
         </span>
-        <span className="ml-1 text-brand-700">{open ? 'Hide' : 'Show'}</span>
+        <span className="ml-1 text-brand-800">{open ? 'Hide' : 'Show'}</span>
       </button>
       {open && (
         <ul className="mt-2 ml-18 space-y-1.5 border-l border-gray-200 pl-3">

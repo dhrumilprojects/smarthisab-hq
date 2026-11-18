@@ -1,15 +1,7 @@
 import { useState, type ReactNode } from 'react'
-import type { TourStep, UserDetail } from '../../data/types'
+import type { UserDetail } from '../../data/types'
 import { daysLeft, formatDate } from './istFormat'
-
-const TOUR_STEPS: Record<TourStep, string> = {
-  project: 'Step 1 of 4: create a project',
-  expense: 'Step 2 of 4: add an expense',
-  income: 'Step 3 of 4: add a client payment',
-  review: 'Step 4 of 4: see the totals',
-  done: 'Done',
-  skipped: 'Skipped',
-}
+import { TOUR_STEPS } from './tourSteps'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -20,6 +12,11 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
+// ['phone', 'profession'] → "phone and profession"
+function joinWithAnd(items: string[]) {
+  return items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : items[0]
+}
+
 export default function UserDetailsTab({ user }: { user: UserDetail }) {
   const [now] = useState(Date.now)
   const plan = user.subscription
@@ -27,7 +24,6 @@ export default function UserDetailsTab({ user }: { user: UserDetail }) {
 
   return (
     <dl className="divide-y divide-gray-100">
-      <Row label="Name">{user.name}</Row>
       <Row label="Email">{user.email || '—'}</Row>
       <Row label="Phone">{user.phone ?? '—'}</Row>
       <Row label="Profession">{user.profession ?? '—'}</Row>
@@ -42,8 +38,10 @@ export default function UserDetailsTab({ user }: { user: UserDetail }) {
           'No subscription'
         )}
       </Row>
-      <Row label="Onboarding tour">{user.tourStep ? TOUR_STEPS[user.tourStep] : 'Before tour'}</Row>
-      <Row label="Profile">{user.profileComplete ? 'Complete' : 'Incomplete (missing name, phone or profession)'}</Row>
+      <Row label="Onboarding tour">{user.tourStep ? TOUR_STEPS[user.tourStep].label : 'Before tour'}</Row>
+      <Row label="Profile">
+        {user.missingProfile.length ? `Missing ${joinWithAnd(user.missingProfile)}` : 'Complete'}
+      </Row>
     </dl>
   )
 }

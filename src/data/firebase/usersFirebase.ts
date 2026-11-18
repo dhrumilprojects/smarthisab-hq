@@ -92,8 +92,12 @@ export const firebaseUsersRepo: UsersRepo = {
       createdAt: user.createdAt ? new Date(user.createdAt) : null,
       subscription: toSubscription(subscription.data()),
       tourStep: user.onboardingTour ?? null,
-      // Same check the app uses to stop asking for profile details
-      profileComplete: Boolean(user.name?.trim() && user.phoneNumber && user.profession),
+      // Same fields the app checks before it stops asking for profile details
+      missingProfile: [
+        ...(user.name?.trim() ? [] : ['name' as const]),
+        ...(user.phoneNumber ? [] : ['phone' as const]),
+        ...(user.profession ? [] : ['profession' as const]),
+      ],
     }
   },
 

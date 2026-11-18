@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { crmRepo } from '../../data'
-import type { CrmContactChange, NoteInput } from '../../data/types'
+import type { ContactLog, CrmContactChange, NoteInput } from '../../data/types'
 
 // Every CRM query starts with 'crm', so one invalidate refreshes stages, follow-ups and the panel together
 export function useCrmContact(userId: string) {
@@ -44,8 +44,8 @@ export function useUpdateContact(userId: string, by: string) {
   return useCrmMutation((change: CrmContactChange) => crmRepo.updateContact(userId, change, by))
 }
 
-export function useAddNote(userId: string, by: string) {
-  return useCrmMutation((note: NoteInput) => crmRepo.addNote(userId, note, by))
+export function useLogContact(userId: string, by: string) {
+  return useCrmMutation((log: ContactLog) => crmRepo.logContact(userId, log, by))
 }
 
 export function useUpdateNote(userId: string) {

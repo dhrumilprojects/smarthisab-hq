@@ -44,7 +44,7 @@ src/
     index.ts          # picks the implementation
   auth/               # login, logout, current user + role
   components/
-    ui/               # shared, data-free: Button, Badge, Avatar, Input, Table, Pagination, ConfirmDialog, SidePanel, Tabs
+    ui/               # shared, data-free: Button, Badge, Avatar, Chip, Input, Select, Textarea, Table, Pagination, Popover, SidePanel, Tabs
     layout/           # page shells: AppLayout, Sidebar
   features/
     users/            # UsersPage, UsersTable, useUsers

@@ -36,6 +36,8 @@ export type UserSegment = 'active' | 'inactive' | 'not_activated' | 'trial_endin
 // Users in each segment, in the order the list shows them
 export type UserSegments = Record<UserSegment, User[]>
 
+export type ProfileField = 'name' | 'phone' | 'profession'
+
 export type TourStep = 'project' | 'expense' | 'income' | 'review' | 'done' | 'skipped'
 
 export type UserDetail = {
@@ -49,8 +51,8 @@ export type UserDetail = {
   subscription: User['subscription']
   // null for users who signed up before the onboarding tour existed
   tourStep: TourStep | null
-  // Name, phone and profession are all filled in
-  profileComplete: boolean
+  // Profile fields the user hasn't filled in yet. Empty when the profile is complete.
+  missingProfile: ProfileField[]
 }
 
 export type ActivityKind = 'project' | 'expense' | 'income' | 'vendor' | 'labour' | 'plan'
@@ -123,5 +125,8 @@ export type CrmNote = {
 }
 
 export type NoteInput = Pick<CrmNote, 'outcome' | 'text'>
+
+// A call or message, saved as a note. Replaces the follow-up date (null clears it).
+export type ContactLog = NoteInput & { nextFollowUpAt: Date | null }
 
 export type HqMember = { email: string; role: 'admin' | 'support' | 'sales' }

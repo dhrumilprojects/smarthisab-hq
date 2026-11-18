@@ -5,7 +5,7 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className'> & {
 }
 
 const variants = {
-  primary: 'border-brand-600 bg-brand-600 text-white hover:bg-brand-700',
+  primary: 'border-brand-600 bg-brand-600 text-white hover:bg-brand-800',
   secondary: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
   danger: 'border-red-200 bg-white text-red-700 hover:bg-red-50',
 }

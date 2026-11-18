@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore'
 import { z } from 'zod'
 import type { CrmRepo } from '../crm'
-import type { CrmContactChange, User } from '../types'
+import type { CrmContactChange, CrmStage, NoteOutcome, User } from '../types'
 import { db } from './app'
 import { toUser } from './user'
 
@@ -53,6 +53,12 @@ const noteSchema = z.object({
   outcome: z.enum(OUTCOMES),
   text: z.string(),
 })
+
+const STAGE_AFTER: Record<NoteOutcome, CrmStage> = {
+  reached: 'talked',
+  no_answer: 'contacted',
+  call_back: 'follow_up',
+}
 
 const contactRef = (userId: string) => doc(db, 'crm_contacts', userId)
 const notesRef = (userId: string) => collection(db, 'crm_contacts', userId, 'notes')
@@ -123,12 +129,17 @@ export const firebaseCrmRepo: CrmRepo = {
     })
   },
 
-  async addNote(userId, note, by) {
+  async logContact(userId, { outcome, text, nextFollowUpAt }, by) {
     const batch = writeBatch(db)
-    batch.set(doc(notesRef(userId)), { ...note, authorEmail: by, createdAt: serverTimestamp() })
+    batch.set(doc(notesRef(userId)), { outcome, text, authorEmail: by, createdAt: serverTimestamp() })
     batch.set(
       contactRef(userId),
-      { lastContactedAt: serverTimestamp(), updatedAt: serverTimestamp(), updatedBy: by },
+      {
+        ...toFields({ stage: STAGE_AFTER[outcome], nextFollowUpAt }),
+        lastContactedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        updatedBy: by,
+      },
       { merge: true },
     )
     await batch.commit()
