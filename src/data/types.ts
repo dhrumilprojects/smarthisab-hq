@@ -33,6 +33,9 @@ export type UsersPage = {
 // trial_ending: free trial ends within 7 days
 export type UserSegment = 'active' | 'inactive' | 'not_activated' | 'trial_ending'
 
+// Users by active days (IST) in the last 14. Each user is in one count.
+export type ActiveDayBuckets = { active: number; twoDays: number; oneDay: number }
+
 // Users in each segment, in the order the list shows them
 export type UserSegments = Record<UserSegment, User[]>
 
