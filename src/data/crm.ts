@@ -1,4 +1,4 @@
-import type { CrmContact, CrmContactChange, CrmNote, CrmStage, HqMember, NoteInput, User } from './types'
+import type { ContactLog, CrmContact, CrmContactChange, CrmNote, CrmStage, HqMember, NoteInput, User } from './types'
 
 // Sales notes about app users. `by` is the signed-in HQ user's email.
 export type CrmRepo = {
@@ -12,8 +12,9 @@ export type CrmRepo = {
   updateContact(userId: string, change: CrmContactChange, by: string): Promise<void>
   // Newest first
   getNotes(userId: string): Promise<CrmNote[]>
-  // Also sets the contact's last contacted time
-  addNote(userId: string, note: NoteInput, by: string): Promise<void>
+  // Saves the note and updates the contact to match: last contacted time, follow-up date, and stage from the
+  // outcome (Reached → Talked, No answer → Contacted, Call back → Follow up)
+  logContact(userId: string, log: ContactLog, by: string): Promise<void>
   // Only the author can change or delete a note
   updateNote(userId: string, noteId: string, note: NoteInput): Promise<void>
   deleteNote(userId: string, noteId: string): Promise<void>

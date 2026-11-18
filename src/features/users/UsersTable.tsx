@@ -58,7 +58,7 @@ export default function UsersTable({ users, stages, onOpen, selectedId, onDelete
           </td>
           <td className="px-5 py-3 whitespace-nowrap text-gray-600">
             {user.phone ? (
-              <a href={`tel:${user.phone}`} className="hover:text-brand-700 hover:underline">
+              <a href={`tel:${user.phone}`} className="hover:text-brand-800 hover:underline">
                 {user.phone}
               </a>
             ) : (

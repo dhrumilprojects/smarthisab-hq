@@ -8,7 +8,7 @@ import Textarea from '../../components/ui/Textarea'
 import type { CrmNote, NoteInput } from '../../data/types'
 import { OUTCOMES } from './crmLabels'
 import { formatDate, formatTime } from './istFormat'
-import { useAddNote, useDeleteNote, useNotes, useUpdateNote } from './useCrm'
+import { useDeleteNote, useNotes, useUpdateNote } from './useCrm'
 
 type FormProps = {
   initial: NoteInput
@@ -18,7 +18,7 @@ type FormProps = {
   onCancel?: () => void
 }
 
-// Outcome and text, for a new note or for editing one
+// Outcome and text, for editing a note. New notes come from Log a contact in the panel header.
 function NoteForm({ initial, saving, saveLabel, onSave, onCancel }: FormProps) {
   const [note, setNote] = useState(initial)
 
@@ -44,7 +44,7 @@ function NoteForm({ initial, saving, saveLabel, onSave, onCancel }: FormProps) {
         aria-label="Note"
       />
       <div className="flex gap-2">
-        <Button type="submit" variant="primary" disabled={saving || !note.text.trim()}>
+        <Button type="submit" variant="primary" disabled={saving}>
           {saving ? 'Saving…' : saveLabel}
         </Button>
         {onCancel && (
@@ -54,25 +54,6 @@ function NoteForm({ initial, saving, saveLabel, onSave, onCancel }: FormProps) {
         )}
       </div>
     </form>
-  )
-}
-
-function NewNote({ userId, by }: { userId: string; by: string }) {
-  const addNote = useAddNote(userId, by)
-  // Remounting the form after a save clears it
-  const [saved, setSaved] = useState(0)
-
-  return (
-    <div className="space-y-2 rounded-lg bg-gray-50 p-4">
-      <NoteForm
-        key={saved}
-        initial={{ outcome: 'reached', text: '' }}
-        saving={addNote.isPending}
-        saveLabel="Add note"
-        onSave={(note) => addNote.mutate(note, { onSuccess: () => setSaved(saved + 1) })}
-      />
-      {addNote.isError && <p className="text-sm text-red-600">Couldn't save the note: {addNote.error.message}</p>}
-    </div>
   )
 }
 
@@ -114,7 +95,7 @@ function Note({ userId, note, isMine }: { userId: string; note: CrmNote; isMine:
           onCancel={() => setEditing(false)}
         />
       ) : (
-        <p className="text-sm whitespace-pre-wrap text-gray-700">{note.text}</p>
+        note.text && <p className="text-sm whitespace-pre-wrap text-gray-700">{note.text}</p>
       )}
 
       {error && <p className="text-sm text-red-600">Couldn't change the note: {error.message}</p>}
@@ -129,9 +110,12 @@ export default function UserNotesTab({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-4">
-      {canEdit && hqUser && <NewNote userId={userId} by={hqUser.email} />}
-
-      <LoadState data={notes} error={isError} errorMessage="Couldn't load notes" emptyMessage="No notes yet.">
+      <LoadState
+        data={notes}
+        error={isError}
+        errorMessage="Couldn't load notes"
+        emptyMessage={canEdit ? 'No notes yet. Use Log a contact at the top to add one.' : 'No notes yet.'}
+      >
         {(notes) => (
           <ul className="divide-y divide-gray-100">
             {notes.map((note) => (

@@ -51,3 +51,9 @@ export function daysLeft(endsAt: Date, now: number) {
 export function fromDayKey(value: string) {
   return new Date(`${value}T00:00:00+05:30`)
 }
+
+// "today", "yesterday" or "3 days ago", counted in IST days
+export function daysAgo(date: Date, now: number) {
+  const days = Math.round((Date.parse(dayKey(new Date(now))) - Date.parse(dayKey(date))) / (24 * 60 * 60 * 1000))
+  return days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`
+}
