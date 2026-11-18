@@ -31,7 +31,7 @@ export type UsersPage = {
 // inactive: has logged expenses, but none in the last 7 days
 // not_activated: has never logged an expense
 // trial_ending: free trial ends within 7 days
-export type UserSegment = 'active' | 'inactive' | 'not_activated' | 'trial_ending'
+export type UserSegment = 'active' | 'two_days' | 'one_day' | 'inactive' | 'not_activated' | 'trial_ending'
 
 // Users by active days (IST) in the last 14. Each user is in one count.
 export type ActiveDayBuckets = { active: number; twoDays: number; oneDay: number }

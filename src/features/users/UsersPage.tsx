@@ -30,7 +30,11 @@ export default function UsersPage() {
   // A filter's users are all loaded at once, so its pages are cut in the browser
   const segments = useUserSegments()
   const followUps = useFollowUpsDue(hqUser?.email)
-  const [filter, setFilter] = useState<UserFilter | null>(null)
+  // The Dashboard links here with /users?filter=<id>
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [filter, setFilter] = useState<UserFilter | null>(
+    () => FILTERS.find((f) => f.id === searchParams.get('filter'))?.id ?? null,
+  )
   const [filterPage, setFilterPage] = useState(1)
   const filterInfo = FILTERS.find((f) => f.id === filter)
   const filterQuery = filter === 'my_follow_ups' ? followUps : segments
@@ -38,7 +42,6 @@ export default function UsersPage() {
   const shownUsers = filter ? filterUsers?.slice((filterPage - 1) * PAGE_SIZE, filterPage * PAGE_SIZE) : data?.users
   const stages = useStages(shownUsers?.map((user) => user.id) ?? [])
   // The open user's panel lives in the URL (/users?user=<id>), so links open it and Back closes it
-  const [searchParams, setSearchParams] = useSearchParams()
   const openUserId = searchParams.get('user')
   const location = useLocation()
   const navigate = useNavigate()

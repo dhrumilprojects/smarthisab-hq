@@ -1,4 +1,4 @@
-import { collection, getCountFromServer, getDocs, query, Timestamp, where } from 'firebase/firestore'
+import { collection, getCountFromServer, getDocs, query, Timestamp, where, type QueryDocumentSnapshot } from 'firebase/firestore'
 import { z } from 'zod'
 import type { ActiveDayBuckets, User, UserSegments } from '../types'
 import { db } from './app'
@@ -23,6 +23,22 @@ export function activeDayCount(times: number[], now: number) {
   return new Set(times.filter((time) => time >= now - ACTIVE_WINDOW_DAYS * DAY).map(istDay)).size
 }
 
+// Users by number of active days. Shared by the Dashboard counts and the Users chips, so they always agree.
+export function activeBucket(days: number) {
+  if (days >= 3) return 'active'
+  if (days === 2) return 'two_days'
+  if (days === 1) return 'one_day'
+  return null
+}
+
+// IDs of app accounts that belong to HQ staff (test and internal accounts), matched by email
+function staffIdsIn(userDocs: QueryDocumentSnapshot[], staffDocs: QueryDocumentSnapshot[]) {
+  const staffEmails = staffDocs.map((staff) => staff.id.toLowerCase())
+  return userDocs
+    .filter((userDoc) => staffEmails.includes(toUser(userDoc.id, userDoc.data(), null).email.toLowerCase()))
+    .map((userDoc) => userDoc.id)
+}
+
 // Newest sign-up first. Users without a sign-up date go last.
 function bySignup(a: User, b: User) {
   return (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)
@@ -31,9 +47,10 @@ function bySignup(a: User, b: User) {
 // Uses the server `createdAt` of each expense, not its `date` field, which users backdate
 export async function getUserSegments(): Promise<UserSegments> {
   const now = Date.now()
-  const [userDocs, subscriptionDocs, recentExpenses] = await Promise.all([
+  const [userDocs, subscriptionDocs, staffDocs, recentExpenses] = await Promise.all([
     getDocs(collection(db, 'users')),
     getDocs(collection(db, 'subscriptions')),
+    getDocs(collection(db, 'hq_users')),
     getDocs(query(collection(db, 'expenses'), where('createdAt', '>=', Timestamp.fromMillis(now - WINDOW_DAYS * DAY)))),
   ])
 
@@ -48,7 +65,9 @@ export async function getUserSegments(): Promise<UserSegments> {
     if (parsed.success) (times[parsed.data.userId] ??= []).push(parsed.data.createdAt.toMillis())
   }
   const lastExpense = (user: User) => Math.max(...times[user.id])
-  const activeDays = (user: User) => activeDayCount(times[user.id], now)
+  // HQ staff aren't counted in the active-day buckets, same as on the Dashboard
+  const staffIds = staffIdsIn(userDocs.docs, staffDocs.docs)
+  const bucket = (user: User) => (staffIds.includes(user.id) ? null : activeBucket(activeDayCount(times[user.id], now)))
 
   // No expense in the window: count to tell lapsed users from those who never logged one
   const quiet = users.filter((user) => !times[user.id])
@@ -63,10 +82,10 @@ export async function getUserSegments(): Promise<UserSegments> {
   const trialEndsAt = (user: User) => user.subscription?.endsAt.getTime() ?? 0
 
   return {
-    // Most active days first
-    active: recent
-      .filter((user) => activeDays(user) >= 3)
-      .sort((a, b) => activeDays(b) - activeDays(a) || lastExpense(b) - lastExpense(a)),
+    // Most recent expense first
+    active: recent.filter((user) => bucket(user) === 'active').sort((a, b) => lastExpense(b) - lastExpense(a)),
+    two_days: recent.filter((user) => bucket(user) === 'two_days').sort((a, b) => lastExpense(b) - lastExpense(a)),
+    one_day: recent.filter((user) => bucket(user) === 'one_day').sort((a, b) => lastExpense(b) - lastExpense(a)),
     // Most recently lapsed first, then those who stopped before the window
     inactive: [
       ...recent.filter((user) => lastExpense(user) < now - 7 * DAY).sort((a, b) => lastExpense(b) - lastExpense(a)),
@@ -83,10 +102,7 @@ export async function getUserSegments(): Promise<UserSegments> {
 // IDs of app accounts that belong to HQ staff (test and internal accounts), matched by email
 export async function getStaffUserIds() {
   const [userDocs, staffDocs] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'hq_users'))])
-  const staffEmails = staffDocs.docs.map((staff) => staff.id.toLowerCase())
-  return userDocs.docs
-    .filter((userDoc) => staffEmails.includes(toUser(userDoc.id, userDoc.data(), null).email.toLowerCase()))
-    .map((userDoc) => userDoc.id)
+  return staffIdsIn(userDocs.docs, staffDocs.docs)
 }
 
 // Users by number of active days. HQ staff are left out. Users with no active days are not counted.
@@ -103,10 +119,10 @@ export async function getActiveDayBuckets(): Promise<ActiveDayBuckets> {
     if (parsed.success && !staffIds.includes(parsed.data.userId)) (times[parsed.data.userId] ??= []).push(parsed.data.createdAt.toMillis())
   }
 
-  const days = Object.values(times).map((userTimes) => activeDayCount(userTimes, now))
+  const buckets = Object.values(times).map((userTimes) => activeBucket(activeDayCount(userTimes, now)))
   return {
-    active: days.filter((count) => count >= 3).length,
-    twoDays: days.filter((count) => count === 2).length,
-    oneDay: days.filter((count) => count === 1).length,
+    active: buckets.filter((bucket) => bucket === 'active').length,
+    twoDays: buckets.filter((bucket) => bucket === 'two_days').length,
+    oneDay: buckets.filter((bucket) => bucket === 'one_day').length,
   }
 }

@@ -1,6 +1,7 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usersRepo } from '../../data'
-import type { ActivityFilter, UserSegments } from '../../data/types'
+import type { ActivityFilter, UserSegment, UserSegments } from '../../data/types'
+import { ACTIVE_DAY_SEGMENTS } from './segments'
 import { useDoNotContactIds } from './useCrm'
 
 export function useUsers(cursor?: string) {
@@ -17,7 +18,8 @@ export function useListedUserCount() {
 }
 
 // Reads every user, so it's computed at most every 10 minutes. Users marked "Do not contact" are left out,
-// and that list is read fresh, so marking someone takes them out right away.
+// (except from the active-day chips, which match the Dashboard) and that list is read fresh, so marking
+// someone takes them out right away.
 export function useUserSegments() {
   const segments = useQuery({
     queryKey: ['users', 'segments'],
@@ -31,7 +33,10 @@ export function useUserSegments() {
     data:
       segments.data && hidden
         ? (Object.fromEntries(
-            Object.entries(segments.data).map(([id, users]) => [id, users.filter((user) => !hidden.includes(user.id))]),
+            Object.entries(segments.data).map(([id, users]) => [
+              id,
+              ACTIVE_DAY_SEGMENTS.includes(id as UserSegment) ? users : users.filter((user) => !hidden.includes(user.id)),
+            ]),
           ) as UserSegments)
         : undefined,
     isError: segments.isError || doNotContact.isError,

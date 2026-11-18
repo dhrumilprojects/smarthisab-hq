@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
 import Card from '../../components/ui/Card'
 
 type Props = {
@@ -7,10 +8,12 @@ type Props = {
   icon: ReactNode
   loading: boolean
   error: boolean
+  // Makes the whole card a link
+  to?: string
 }
 
-export default function StatCard({ label, value, icon, loading, error }: Props) {
-  return (
+export default function StatCard({ label, value, icon, loading, error, to }: Props) {
+  const card = (
     <Card padded>
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-gray-500">{label}</p>
@@ -25,5 +28,13 @@ export default function StatCard({ label, value, icon, loading, error }: Props) 
         <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900">{value?.toLocaleString('en-IN')}</p>
       )}
     </Card>
+  )
+
+  return to ? (
+    <Link to={to} className="block rounded-xl hover:shadow-md">
+      {card}
+    </Link>
+  ) : (
+    card
   )
 }
