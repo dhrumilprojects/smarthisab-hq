@@ -2,11 +2,14 @@ import { useState } from 'react'
 import Avatar from '../../components/ui/Avatar'
 import Button from '../../components/ui/Button'
 import Table from '../../components/ui/Table'
-import type { User } from '../../data/types'
+import type { CrmStage, User } from '../../data/types'
+import StageBadge from './StageBadge'
 import SubscriptionBadge from './SubscriptionBadge'
 
 type Props = {
   users: User[]
+  // Users missing from it are stage New. undefined while loading.
+  stages: Record<string, CrmStage> | undefined
   onOpen: (user: User) => void
   // User whose panel is open
   selectedId?: string
@@ -16,11 +19,11 @@ type Props = {
   deletingId?: string
 }
 
-export default function UsersTable({ users, onOpen, selectedId, onDelete, deletingId }: Props) {
+export default function UsersTable({ users, stages, onOpen, selectedId, onDelete, deletingId }: Props) {
   const [now] = useState(Date.now)
 
   return (
-    <Table columns={['Name', 'Subscription', 'Email', 'Phone', 'Joined', ...(onDelete ? [''] : [])]}>
+    <Table columns={['Name', 'Subscription', 'Stage', 'Email', 'Phone', 'Joined', ...(onDelete ? [''] : [])]}>
       {users.map((user) => (
         <tr
           key={user.id}
@@ -40,6 +43,13 @@ export default function UsersTable({ users, onOpen, selectedId, onDelete, deleti
           </td>
           <td className="px-5 py-3">
             <SubscriptionBadge subscription={user.subscription} now={now} />
+          </td>
+          <td className="px-5 py-3">
+            {stages ? (
+              <StageBadge stage={stages[user.id] ?? 'new'} />
+            ) : (
+              <div className="h-5 w-16 animate-pulse rounded-full bg-gray-100" />
+            )}
           </td>
           <td className="px-5 py-3 text-gray-600">
             <span title={user.email} className="block max-w-64 truncate">

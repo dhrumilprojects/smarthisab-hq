@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import Button from '../../components/ui/Button'
+import Chip from '../../components/ui/Chip'
 import LoadState from '../../components/ui/LoadState'
 import type { ActivityEntry, ActivityFilter, ActivityKind } from '../../data/types'
 import { dayKey, formatDate, formatDayHeading, formatShortDate, formatTime, formatUsualTime } from './istFormat'
@@ -205,17 +206,9 @@ export default function UserActivityTab({ userId }: { userId: string }) {
 
       <div className="flex flex-wrap gap-2">
         {FILTERS.map(({ label, type }) => (
-          <button
-            key={label}
-            onClick={() => setFilter(type ? { type } : {})}
-            className={`rounded-full border px-3 py-1 text-sm font-medium ${
-              filter.type === type
-                ? 'border-brand-600 bg-brand-50 text-brand-800'
-                : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-            }`}
-          >
+          <Chip key={label} selected={filter.type === type} onClick={() => setFilter(type ? { type } : {})}>
             {label}
-          </button>
+          </Chip>
         ))}
       </div>
 

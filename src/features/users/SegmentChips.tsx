@@ -1,30 +1,24 @@
-import type { UserSegment, UserSegments } from '../../data/types'
-import { SEGMENTS } from './segments'
+import Chip from '../../components/ui/Chip'
+import { FILTERS, type UserFilter } from './segments'
 
 type Props = {
   // null shows all users
-  active: UserSegment | null
-  // undefined while loading or when it failed. The chips still work, without counts.
-  segments: UserSegments | undefined
-  onChange: (segment: UserSegment | null) => void
+  active: UserFilter | null
+  // Missing while loading or when it failed. The chips still work, without counts.
+  counts: Partial<Record<UserFilter, number>>
+  onChange: (filter: UserFilter | null) => void
 }
 
-export default function SegmentChips({ active, segments, onChange }: Props) {
-  const chips = [{ id: null, label: 'All users' }, ...SEGMENTS]
+export default function SegmentChips({ active, counts, onChange }: Props) {
+  const chips = [{ id: null, label: 'All users' }, ...FILTERS]
 
   return (
     <div className="flex flex-wrap gap-2">
       {chips.map(({ id, label }) => (
-        <button
-          key={label}
-          onClick={() => onChange(id)}
-          className={`rounded-full border px-3 py-1 text-sm font-medium ${
-            active === id ? 'border-brand-600 bg-brand-50 text-brand-800' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-          }`}
-        >
+        <Chip key={label} selected={active === id} onClick={() => onChange(id)}>
           {label}
-          {id && segments && <span className="ml-1.5 text-gray-500">{segments[id].length}</span>}
-        </button>
+          {id && counts[id] !== undefined && <span className="ml-1.5 text-gray-500">{counts[id]}</span>}
+        </Chip>
       ))}
     </div>
   )

@@ -1,7 +1,16 @@
 import type { UserSegment } from '../../data/types'
 
+// What the Users page can be filtered to. My follow-ups comes from the CRM, the rest from the segments.
+export type UserFilter = 'my_follow_ups' | UserSegment
+
 // Filter chips on the Users page, in display order
-export const SEGMENTS: { id: UserSegment; label: string; hint: string; empty: string }[] = [
+export const FILTERS: { id: UserFilter; label: string; hint: string; empty: string }[] = [
+  {
+    id: 'my_follow_ups',
+    label: 'My follow-ups',
+    hint: 'Users you own whose follow-up date is today or earlier, oldest first.',
+    empty: 'No follow-ups due. Set a follow-up date in a user’s panel.',
+  },
   {
     id: 'active',
     label: 'Active',

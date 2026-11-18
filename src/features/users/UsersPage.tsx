@@ -5,11 +5,12 @@ import Card from '../../components/ui/Card'
 import LoadState from '../../components/ui/LoadState'
 import PageHeader from '../../components/ui/PageHeader'
 import Pagination from '../../components/ui/Pagination'
-import type { User, UserSegment } from '../../data/types'
+import type { User } from '../../data/types'
 import { useTotalUsers } from '../dashboard/useStats'
 import { formatTime } from './istFormat'
 import SegmentChips from './SegmentChips'
-import { SEGMENTS } from './segments'
+import { FILTERS, type UserFilter } from './segments'
+import { useFollowUpsDue, useStages } from './useCrm'
 import { useDeleteUser, useListedUserCount, useUserSegments, useUsers } from './useUsers'
 import UserPanel from './UserPanel'
 import UsersTable from './UsersTable'
@@ -17,7 +18,8 @@ import UsersTable from './UsersTable'
 const PAGE_SIZE = 25
 
 export default function UsersPage() {
-  const isAdmin = useAuth()?.role === 'admin'
+  const hqUser = useAuth()
+  const isAdmin = hqUser?.role === 'admin'
   // Cursor for each page visited so far. The first page has none.
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined])
   const { data, isError, isPlaceholderData } = useUsers(cursors[cursors.length - 1])
@@ -27,10 +29,14 @@ export default function UsersPage() {
   const page = cursors.length
   // A filter's users are all loaded at once, so its pages are cut in the browser
   const segments = useUserSegments()
-  const [segment, setSegment] = useState<UserSegment | null>(null)
-  const [segmentPage, setSegmentPage] = useState(1)
-  const segmentInfo = SEGMENTS.find((s) => s.id === segment)
-  const segmentUsers = segment ? segments.data?.[segment] : undefined
+  const followUps = useFollowUpsDue(hqUser?.email)
+  const [filter, setFilter] = useState<UserFilter | null>(null)
+  const [filterPage, setFilterPage] = useState(1)
+  const filterInfo = FILTERS.find((f) => f.id === filter)
+  const filterQuery = filter === 'my_follow_ups' ? followUps : segments
+  const filterUsers = filter === 'my_follow_ups' ? followUps.data : filter ? segments.data?.[filter] : undefined
+  const shownUsers = filter ? filterUsers?.slice((filterPage - 1) * PAGE_SIZE, filterPage * PAGE_SIZE) : data?.users
+  const stages = useStages(shownUsers?.map((user) => user.id) ?? [])
   // The open user's panel lives in the URL (/users?user=<id>), so links open it and Back closes it
   const [searchParams, setSearchParams] = useSearchParams()
   const openUserId = searchParams.get('user')
@@ -49,9 +55,9 @@ export default function UsersPage() {
     else setSearchParams({}, { replace: true })
   }
 
-  function changeSegment(next: UserSegment | null) {
-    setSegment(next)
-    setSegmentPage(1)
+  function changeFilter(next: UserFilter | null) {
+    setFilter(next)
+    setFilterPage(1)
   }
 
   function confirmDelete(user: User) {
@@ -74,11 +80,21 @@ export default function UsersPage() {
       )}
 
       <div className="mt-8">
-        <SegmentChips active={segment} segments={segments.data} onChange={changeSegment} />
-        {segmentInfo && (
+        <SegmentChips
+          active={filter}
+          counts={{
+            my_follow_ups: followUps.data?.length,
+            ...(segments.data &&
+              Object.fromEntries(Object.entries(segments.data).map(([id, users]) => [id, users.length]))),
+          }}
+          onChange={changeFilter}
+        />
+        {filterInfo && (
           <p className="mt-3 text-sm text-gray-500">
-            {segmentInfo.hint}
-            {segments.data && ` Updated ${formatTime(new Date(segments.dataUpdatedAt))}.`}
+            {filterInfo.hint}
+            {filter !== 'my_follow_ups' &&
+              segments.data &&
+              ` Updated ${formatTime(new Date(segments.dataUpdatedAt))}.`}
           </p>
         )}
       </div>
@@ -86,14 +102,16 @@ export default function UsersPage() {
       <div className="mt-4">
         <Card>
           <LoadState
-            data={segment ? segmentUsers?.slice((segmentPage - 1) * PAGE_SIZE, segmentPage * PAGE_SIZE) : data?.users}
-            error={segment ? segments.isError : isError}
+            data={shownUsers}
+            error={filter ? filterQuery.isError : isError}
             errorMessage="Couldn't load users"
-            emptyMessage={segmentInfo?.empty ?? (page > 1 ? 'No more users.' : 'No users yet.')}
+            emptyMessage={filterInfo?.empty ?? (page > 1 ? 'No more users.' : 'No users yet.')}
           >
             {(users) => (
               <UsersTable
                 users={users}
+                // A failed stage lookup shouldn't hide the list, so it falls back to New
+                stages={stages.isError ? {} : stages.data}
                 onOpen={openUser}
                 selectedId={openUserId ?? undefined}
                 onDelete={isAdmin ? confirmDelete : undefined}
@@ -104,20 +122,20 @@ export default function UsersPage() {
         </Card>
       </div>
 
-      {segmentUsers && segmentUsers.length > PAGE_SIZE && (
+      {filterUsers && filterUsers.length > PAGE_SIZE && (
         <div className="mt-4">
           <Pagination
-            page={segmentPage}
-            totalPages={Math.ceil(segmentUsers.length / PAGE_SIZE)}
-            hasNext={segmentPage * PAGE_SIZE < segmentUsers.length}
+            page={filterPage}
+            totalPages={Math.ceil(filterUsers.length / PAGE_SIZE)}
+            hasNext={filterPage * PAGE_SIZE < filterUsers.length}
             loading={false}
-            onPrev={() => setSegmentPage(segmentPage - 1)}
-            onNext={() => setSegmentPage(segmentPage + 1)}
+            onPrev={() => setFilterPage(filterPage - 1)}
+            onNext={() => setFilterPage(filterPage + 1)}
           />
         </div>
       )}
 
-      {!segment && data && (page > 1 || data.nextCursor) && (
+      {!filter && data && (page > 1 || data.nextCursor) && (
         <div className="mt-4">
           <Pagination
             page={page}
@@ -130,7 +148,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {!segment && totalUsers.data !== undefined && listedUsers.data !== undefined && totalUsers.data > listedUsers.data && (
+      {!filter && totalUsers.data !== undefined && listedUsers.data !== undefined && totalUsers.data > listedUsers.data && (
         <p className="mt-4 text-sm text-amber-700">
           {totalUsers.data - listedUsers.data} of {totalUsers.data} users have no sign-up date, so they aren't listed
           here.
