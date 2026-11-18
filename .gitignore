@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Analytics script output and service account keys
+scripts/**/out/
+scripts/**/*.json

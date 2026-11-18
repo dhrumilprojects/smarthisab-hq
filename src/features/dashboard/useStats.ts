@@ -27,3 +27,7 @@ export function useSignupsPerDay(days: number) {
 export function useTrialsEnding(days: number) {
   return useQuery({ queryKey: ['subscriptions', 'trialsEnding', days], queryFn: () => subscriptionsRepo.getTrialsEnding(days) })
 }
+
+export function useActiveDayBuckets() {
+  return useQuery({ queryKey: ['stats', 'activeDayBuckets'], queryFn: statsRepo.getActiveDayBuckets })
+}
