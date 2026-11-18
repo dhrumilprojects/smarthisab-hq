@@ -23,17 +23,17 @@ const DAY = 24 * HOUR
 const IST_OFFSET = 5.5 * HOUR
 
 // Collections of records users add. Each doc has `userId` and a server `createdAt`.
-const RECORDS = {
+export const RECORDS = {
   projects: { kind: 'project', label: 'Added a project' },
   expenses: { kind: 'expense', label: 'Added an expense' },
   payments: { kind: 'income', label: 'Added a client payment' },
   vendors: { kind: 'vendor', label: 'Added a vendor' },
   labours: { kind: 'labour', label: 'Added a labourer' },
 } as const
-type RecordCollection = keyof typeof RECORDS
-const RECORD_COLLECTIONS = Object.keys(RECORDS) as RecordCollection[]
+export type RecordCollection = keyof typeof RECORDS
+export const RECORD_COLLECTIONS = Object.keys(RECORDS) as RecordCollection[]
 
-const COLLECTIONS_BY_TYPE: Record<NonNullable<ActivityFilter['type']>, RecordCollection[]> = {
+export const COLLECTIONS_BY_TYPE: Record<NonNullable<ActivityFilter['type']>, RecordCollection[]> = {
   projects: ['projects'],
   expenses: ['expenses'],
   income: ['payments'],
@@ -58,7 +58,7 @@ type Position = [seconds: number, nanoseconds: number] | 'done'
 type Cursor = Partial<Record<RecordCollection | 'plan', Position>>
 
 // `entry` is null for docs the log skips (payments against an expense). They still move the cursor.
-type Item = { ts: Timestamp; entry: ActivityEntry | null }
+export type Item = { ts: Timestamp; entry: ActivityEntry | null }
 
 function compare(a: Timestamp, b: Timestamp) {
   return a.seconds - b.seconds || a.nanoseconds - b.nanoseconds
@@ -81,7 +81,7 @@ function capitalize(value: string | undefined) {
   return value ? value[0].toUpperCase() + value.slice(1) : null
 }
 
-function toItem(name: RecordCollection, snap: QueryDocumentSnapshot, projectNames: Record<string, string>): Item | null {
+export function toItem(name: RecordCollection, snap: QueryDocumentSnapshot, projectNames: Record<string, string>): Item | null {
   const parsed = recordSchema.safeParse(snap.data())
   if (!parsed.success) return null
   const record = parsed.data
@@ -109,11 +109,25 @@ async function getProjectNames(userId: string) {
   return Object.fromEntries(snapshot.docs.map((project) => [project.id, String(project.get('title') ?? 'Untitled project')]))
 }
 
-function planItem(id: string, ts: Timestamp, label: string, amount: number | null = null): Item {
+export function planItem(id: string, ts: Timestamp, label: string, amount: number | null = null): Item {
   return {
     ts,
     entry: { id: `plan/${id}`, kind: 'plan', at: ts.toDate(), label, category: null, projectName: null, forDate: null, amount },
   }
+}
+
+// A paid `payment_history` doc as a plan event. Null for unpaid ones.
+export function paymentItem(payment: QueryDocumentSnapshot): Item | null {
+  const createdAt = payment.get('createdAt')
+  if (payment.get('status') !== 'paid' || !(createdAt instanceof Timestamp)) return null
+  const amount = Number(payment.get('amount'))
+  return planItem(
+    payment.id,
+    createdAt,
+    payment.get('type') === 'renewal' ? 'Plan renewed' : 'Plan paid',
+    // Stored in paise
+    Number.isFinite(amount) ? amount / 100 : null,
+  )
 }
 
 // A user has only a few plan events, so they're all read at once
@@ -135,19 +149,10 @@ async function getPlanItems(userId: string) {
 
   const paidOrders = new Set<unknown>()
   for (const payment of history.docs) {
-    const createdAt = payment.get('createdAt')
-    if (payment.get('status') !== 'paid' || !(createdAt instanceof Timestamp)) continue
+    const item = paymentItem(payment)
+    if (!item) continue
     paidOrders.add(payment.get('orderId'))
-    const amount = Number(payment.get('amount'))
-    items.push(
-      planItem(
-        payment.id,
-        createdAt,
-        payment.get('type') === 'renewal' ? 'Plan renewed' : 'Plan paid',
-        // Stored in paise
-        Number.isFinite(amount) ? amount / 100 : null,
-      ),
-    )
+    items.push(item)
   }
 
   for (const order of orders.docs) {

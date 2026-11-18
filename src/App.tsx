@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { useAuth } from './auth/auth'
 import AppLayout from './components/layout/AppLayout'
+import ActivityPage from './features/activity/ActivityPage'
 import DashboardPage from './features/dashboard/DashboardPage'
 import LoginPage from './features/login/LoginPage'
 import UsersPage from './features/users/UsersPage'
@@ -30,6 +31,7 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/activity" element={<ActivityPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
