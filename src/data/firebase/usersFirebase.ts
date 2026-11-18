@@ -16,16 +16,11 @@ import { z } from 'zod'
 import type { UsersRepo } from '../users'
 import { getUserActivity, getUserActivitySummary } from './activityFirebase'
 import { db, functions } from './app'
+import { getUserSegments } from './segmentsFirebase'
 import { toSubscription } from './subscription'
+import { toUser, userSchema } from './user'
 
 const PAGE_SIZE = 25
-
-const userSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().optional(),
-  phoneNumber: z.string().optional(),
-  createdAt: z.string().optional(),
-})
 
 // Labels saved by older app versions
 const LEGACY_PROFESSIONS: Record<string, string> = { Electricians: 'Electrician', Civil: 'Civil contractor' }
@@ -62,17 +57,9 @@ export const firebaseUsersRepo: UsersRepo = {
       : null
 
     return {
-      users: userDocs.map((userDoc) => {
-        const user = userSchema.catch({}).parse(userDoc.data())
-        return {
-          id: userDoc.id,
-          name: user.name || 'Unnamed user',
-          email: user.email ?? '',
-          phone: user.phoneNumber || null,
-          createdAt: user.createdAt ? new Date(user.createdAt) : null,
-          subscription: toSubscription(subscriptions?.docs.find((s) => s.id === userDoc.id)?.data()),
-        }
-      }),
+      users: userDocs.map((userDoc) =>
+        toUser(userDoc.id, userDoc.data(), subscriptions?.docs.find((s) => s.id === userDoc.id)?.data()),
+      ),
       nextCursor: snapshot.docs.length > PAGE_SIZE ? snapshot.docs[PAGE_SIZE - 1].id : null,
     }
   },
@@ -112,4 +99,5 @@ export const firebaseUsersRepo: UsersRepo = {
 
   getUserActivitySummary,
   getUserActivity,
+  getUserSegments,
 }
