@@ -15,6 +15,11 @@ export function useListedUserCount() {
   return useQuery({ queryKey: ['users', 'listedCount'], queryFn: usersRepo.countListedUsers })
 }
 
+// Reads every user, so it's computed at most every 10 minutes
+export function useUserSegments() {
+  return useQuery({ queryKey: ['users', 'segments'], queryFn: usersRepo.getUserSegments, staleTime: 10 * 60 * 1000 })
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient()
   return useMutation({

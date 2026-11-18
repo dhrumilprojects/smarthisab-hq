@@ -5,9 +5,12 @@ import Card from '../../components/ui/Card'
 import LoadState from '../../components/ui/LoadState'
 import PageHeader from '../../components/ui/PageHeader'
 import Pagination from '../../components/ui/Pagination'
-import type { User } from '../../data/types'
+import type { User, UserSegment } from '../../data/types'
 import { useTotalUsers } from '../dashboard/useStats'
-import { useDeleteUser, useListedUserCount, useUsers } from './useUsers'
+import { formatTime } from './istFormat'
+import SegmentChips from './SegmentChips'
+import { SEGMENTS } from './segments'
+import { useDeleteUser, useListedUserCount, useUserSegments, useUsers } from './useUsers'
 import UserPanel from './UserPanel'
 import UsersTable from './UsersTable'
 
@@ -22,6 +25,12 @@ export default function UsersPage() {
   const listedUsers = useListedUserCount()
   const deleteUser = useDeleteUser()
   const page = cursors.length
+  // A filter's users are all loaded at once, so its pages are cut in the browser
+  const segments = useUserSegments()
+  const [segment, setSegment] = useState<UserSegment | null>(null)
+  const [segmentPage, setSegmentPage] = useState(1)
+  const segmentInfo = SEGMENTS.find((s) => s.id === segment)
+  const segmentUsers = segment ? segments.data?.[segment] : undefined
   // The open user's panel lives in the URL (/users?user=<id>), so links open it and Back closes it
   const [searchParams, setSearchParams] = useSearchParams()
   const openUserId = searchParams.get('user')
@@ -38,6 +47,11 @@ export default function UsersPage() {
   function closeUser() {
     if (openedHere) navigate(-1)
     else setSearchParams({}, { replace: true })
+  }
+
+  function changeSegment(next: UserSegment | null) {
+    setSegment(next)
+    setSegmentPage(1)
   }
 
   function confirmDelete(user: User) {
@@ -60,12 +74,22 @@ export default function UsersPage() {
       )}
 
       <div className="mt-8">
+        <SegmentChips active={segment} segments={segments.data} onChange={changeSegment} />
+        {segmentInfo && (
+          <p className="mt-3 text-sm text-gray-500">
+            {segmentInfo.hint}
+            {segments.data && ` Updated ${formatTime(new Date(segments.dataUpdatedAt))}.`}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4">
         <Card>
           <LoadState
-            data={data?.users}
-            error={isError}
+            data={segment ? segmentUsers?.slice((segmentPage - 1) * PAGE_SIZE, segmentPage * PAGE_SIZE) : data?.users}
+            error={segment ? segments.isError : isError}
             errorMessage="Couldn't load users"
-            emptyMessage={page > 1 ? 'No more users.' : 'No users yet.'}
+            emptyMessage={segmentInfo?.empty ?? (page > 1 ? 'No more users.' : 'No users yet.')}
           >
             {(users) => (
               <UsersTable
@@ -80,7 +104,20 @@ export default function UsersPage() {
         </Card>
       </div>
 
-      {data && (page > 1 || data.nextCursor) && (
+      {segmentUsers && segmentUsers.length > PAGE_SIZE && (
+        <div className="mt-4">
+          <Pagination
+            page={segmentPage}
+            totalPages={Math.ceil(segmentUsers.length / PAGE_SIZE)}
+            hasNext={segmentPage * PAGE_SIZE < segmentUsers.length}
+            loading={false}
+            onPrev={() => setSegmentPage(segmentPage - 1)}
+            onNext={() => setSegmentPage(segmentPage + 1)}
+          />
+        </div>
+      )}
+
+      {!segment && data && (page > 1 || data.nextCursor) && (
         <div className="mt-4">
           <Pagination
             page={page}
@@ -93,7 +130,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {totalUsers.data !== undefined && listedUsers.data !== undefined && totalUsers.data > listedUsers.data && (
+      {!segment && totalUsers.data !== undefined && listedUsers.data !== undefined && totalUsers.data > listedUsers.data && (
         <p className="mt-4 text-sm text-amber-700">
           {totalUsers.data - listedUsers.data} of {totalUsers.data} users have no sign-up date, so they aren't listed
           here.

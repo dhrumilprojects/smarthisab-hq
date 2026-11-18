@@ -27,6 +27,15 @@ export type UsersPage = {
   nextCursor: string | null
 }
 
+// active: logged expenses on 3+ different days (IST) in the last 14
+// inactive: has logged expenses, but none in the last 7 days
+// not_activated: has never logged an expense
+// trial_ending: free trial ends within 7 days
+export type UserSegment = 'active' | 'inactive' | 'not_activated' | 'trial_ending'
+
+// Users in each segment, in the order the list shows them
+export type UserSegments = Record<UserSegment, User[]>
+
 export type TourStep = 'project' | 'expense' | 'income' | 'review' | 'done' | 'skipped'
 
 export type UserDetail = {

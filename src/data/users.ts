@@ -1,4 +1,4 @@
-import type { ActivityFilter, ActivityPage, ActivitySummary, UserDetail, UsersPage } from './types'
+import type { ActivityFilter, ActivityPage, ActivitySummary, UserDetail, UserSegments, UsersPage } from './types'
 
 export type UsersRepo = {
   // Newest first, 25 per page. Pass the previous page's nextCursor to get the next page.
@@ -13,4 +13,7 @@ export type UsersRepo = {
   getUserActivitySummary(id: string): Promise<ActivitySummary>
   // Newest first, 50 per page. Pass the previous page's nextCursor to get the next page.
   getUserActivity(id: string, filter: ActivityFilter, cursor?: string): Promise<ActivityPage>
+  // Every user sorted into the four filters at once, so the page can show a count for each.
+  // Reads all users, so cache the result.
+  getUserSegments(): Promise<UserSegments>
 }
