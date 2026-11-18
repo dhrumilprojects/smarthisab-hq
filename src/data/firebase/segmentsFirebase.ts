@@ -99,16 +99,19 @@ export async function getUserSegments(): Promise<UserSegments> {
   }
 }
 
+// IDs of app accounts that belong to HQ staff (test and internal accounts), matched by email
+export async function getStaffUserIds() {
+  const [userDocs, staffDocs] = await Promise.all([getDocs(collection(db, 'users')), getDocs(collection(db, 'hq_users'))])
+  return staffIdsIn(userDocs.docs, staffDocs.docs)
+}
+
 // Users by number of active days. HQ staff are left out. Users with no active days are not counted.
 export async function getActiveDayBuckets(): Promise<ActiveDayBuckets> {
   const now = Date.now()
-  const [userDocs, staffDocs, recentExpenses] = await Promise.all([
-    getDocs(collection(db, 'users')),
-    getDocs(collection(db, 'hq_users')),
+  const [staffIds, recentExpenses] = await Promise.all([
+    getStaffUserIds(),
     getDocs(query(collection(db, 'expenses'), where('createdAt', '>=', Timestamp.fromMillis(now - ACTIVE_WINDOW_DAYS * DAY)))),
   ])
-
-  const staffIds = staffIdsIn(userDocs.docs, staffDocs.docs)
 
   const times: Record<string, number[]> = {}
   for (const expense of recentExpenses.docs) {

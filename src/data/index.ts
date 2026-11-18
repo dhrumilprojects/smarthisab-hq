@@ -1,4 +1,6 @@
+import type { ActivityRepo } from './activity'
 import type { CrmRepo } from './crm'
+import { firebaseActivityRepo } from './firebase/activityFeedFirebase'
 import { firebaseCrmRepo } from './firebase/crmFirebase'
 import { firebaseStatsRepo } from './firebase/statsFirebase'
 import { firebaseSubscriptionsRepo } from './firebase/subscriptionsFirebase'
@@ -11,3 +13,4 @@ export const statsRepo: StatsRepo = firebaseStatsRepo
 export const subscriptionsRepo: SubscriptionsRepo = firebaseSubscriptionsRepo
 export const usersRepo: UsersRepo = firebaseUsersRepo
 export const crmRepo: CrmRepo = firebaseCrmRepo
+export const activityRepo: ActivityRepo = firebaseActivityRepo

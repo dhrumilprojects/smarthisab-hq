@@ -2,55 +2,10 @@ import { useState, type ReactNode } from 'react'
 import Button from '../../components/ui/Button'
 import Chip from '../../components/ui/Chip'
 import LoadState from '../../components/ui/LoadState'
-import type { ActivityEntry, ActivityFilter, ActivityKind } from '../../data/types'
+import type { ActivityEntry, ActivityFilter } from '../../data/types'
+import { FILTERS, PLURALS, toLines } from './activityLines'
 import { dayKey, formatDate, formatDayHeading, formatShortDate, formatTime, formatUsualTime } from './istFormat'
 import { useUserActivity, useUserActivitySummary } from './useUsers'
-
-const FILTERS: { label: string; type: ActivityFilter['type'] }[] = [
-  { label: 'All', type: undefined },
-  { label: 'Projects', type: 'projects' },
-  { label: 'Expenses', type: 'expenses' },
-  { label: 'Income', type: 'income' },
-  { label: 'People', type: 'people' },
-  { label: 'Plan', type: 'plan' },
-]
-
-const PLURALS: Record<ActivityKind, string> = {
-  project: 'projects',
-  expense: 'expenses',
-  income: 'client payments',
-  vendor: 'vendors',
-  labour: 'labourers',
-  plan: 'plan events',
-}
-
-const BURST_SIZE = 3
-const BURST_GAP = 30 * 60 * 1000
-
-// Splits newest-first entries into lines. 3 or more of the same kind, entered within 30 minutes
-// of each other on the same day, become one burst line.
-function toLines(entries: ActivityEntry[]) {
-  const lines: ActivityEntry[][] = []
-  let run: ActivityEntry[] = []
-  const flush = () => {
-    if (run.length >= BURST_SIZE) lines.push(run)
-    else lines.push(...run.map((entry) => [entry]))
-    run = []
-  }
-  for (const entry of entries) {
-    const previous = run[run.length - 1]
-    const continues =
-      previous &&
-      previous.kind === entry.kind &&
-      previous.kind !== 'plan' &&
-      dayKey(previous.at) === dayKey(entry.at) &&
-      previous.at.getTime() - entry.at.getTime() <= BURST_GAP
-    if (!continues) flush()
-    run.push(entry)
-  }
-  flush()
-  return lines
-}
 
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (

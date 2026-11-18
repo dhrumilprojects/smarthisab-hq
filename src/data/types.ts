@@ -85,6 +85,18 @@ export type ActivityPage = {
   nextCursor: string | null
 }
 
+// What the Activity page filters by. Test and internal accounts are hidden unless `showInternal` is true.
+export type ActivityFeedFilter = ActivityFilter & { showInternal?: boolean }
+
+// A line in the all-users feed: the entry plus who did it
+export type FeedEntry = ActivityEntry & { userId: string; userName: string }
+
+export type FeedPage = {
+  entries: FeedEntry[]
+  // Pass to getActivityBefore for older entries. null when there are none.
+  nextBefore: Date | null
+}
+
 export type ActivityCounts = { records: number; activeDays: number }
 
 export type ActivitySummary = {
