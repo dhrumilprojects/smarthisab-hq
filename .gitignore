@@ -27,3 +27,6 @@ dist-ssr
 # Analytics script output and service account keys
 scripts/**/out/
 scripts/**/*.json
+
+# Firebase CLI cache
+.firebase
