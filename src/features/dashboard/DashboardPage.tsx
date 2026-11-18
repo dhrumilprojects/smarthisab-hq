@@ -96,6 +96,7 @@ export default function DashboardPage() {
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <StatCard
           label="Active users (3+ days in 14)"
+          to="/users?filter=active"
           value={buckets.data?.active}
           loading={buckets.isPending}
           error={buckets.isError}
@@ -107,6 +108,7 @@ export default function DashboardPage() {
         />
         <StatCard
           label="2-day users (last 14 days)"
+          to="/users?filter=two_days"
           value={buckets.data?.twoDays}
           loading={buckets.isPending}
           error={buckets.isError}
@@ -118,6 +120,7 @@ export default function DashboardPage() {
         />
         <StatCard
           label="1-day users (last 14 days)"
+          to="/users?filter=one_day"
           value={buckets.data?.oneDay}
           loading={buckets.isPending}
           error={buckets.isError}
