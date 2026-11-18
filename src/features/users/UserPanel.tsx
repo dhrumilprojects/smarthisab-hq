@@ -2,12 +2,14 @@ import { useState } from 'react'
 import Avatar from '../../components/ui/Avatar'
 import SidePanel from '../../components/ui/SidePanel'
 import Tabs from '../../components/ui/Tabs'
+import CrmFields from './CrmFields'
 import SubscriptionBadge from './SubscriptionBadge'
 import UserActivityTab from './UserActivityTab'
 import UserDetailsTab from './UserDetailsTab'
+import UserNotesTab from './UserNotesTab'
 import { useUserDetail } from './useUsers'
 
-type Tab = 'details' | 'activity'
+type Tab = 'details' | 'activity' | 'notes'
 
 const linkClass = 'rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50'
 
@@ -32,25 +34,30 @@ export default function UserPanel({ userId, onClose }: { userId: string; onClose
         ) : user === null ? (
           <p className="text-sm text-gray-500">This user doesn't exist any more.</p>
         ) : (
-          <div className="flex flex-wrap items-center gap-4">
-            <Avatar name={user.name} size="lg" />
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-semibold text-gray-900">{user.name}</h2>
-              <div className="mt-1">
-                <SubscriptionBadge subscription={user.subscription} now={now} />
+          <>
+            <div className="flex flex-wrap items-center gap-4">
+              <Avatar name={user.name} size="lg" />
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate text-lg font-semibold text-gray-900">{user.name}</h2>
+                <div className="mt-1">
+                  <SubscriptionBadge subscription={user.subscription} now={now} />
+                </div>
               </div>
+              {user.phone && (
+                <div className="flex gap-2">
+                  <a href={`tel:${user.phone}`} className={linkClass}>
+                    Call
+                  </a>
+                  <a href={whatsappLink(user.phone)} target="_blank" rel="noreferrer" className={linkClass}>
+                    WhatsApp
+                  </a>
+                </div>
+              )}
             </div>
-            {user.phone && (
-              <div className="flex gap-2">
-                <a href={`tel:${user.phone}`} className={linkClass}>
-                  Call
-                </a>
-                <a href={whatsappLink(user.phone)} target="_blank" rel="noreferrer" className={linkClass}>
-                  WhatsApp
-                </a>
-              </div>
-            )}
-          </div>
+            <div className="mt-5">
+              <CrmFields userId={userId} />
+            </div>
+          </>
         )}
       </div>
 
@@ -60,12 +67,15 @@ export default function UserPanel({ userId, onClose }: { userId: string; onClose
             tabs={[
               { id: 'details', label: 'Details' },
               { id: 'activity', label: 'Activity' },
+              { id: 'notes', label: 'Notes' },
             ]}
             active={tab}
             onChange={setTab}
           />
           <div className="py-6">
-            {tab === 'details' ? <UserDetailsTab user={user} /> : <UserActivityTab userId={userId} />}
+            {tab === 'details' && <UserDetailsTab user={user} />}
+            {tab === 'activity' && <UserActivityTab userId={userId} />}
+            {tab === 'notes' && <UserNotesTab userId={userId} />}
           </div>
         </div>
       )}

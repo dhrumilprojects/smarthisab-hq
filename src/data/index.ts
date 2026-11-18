@@ -1,3 +1,5 @@
+import type { CrmRepo } from './crm'
+import { firebaseCrmRepo } from './firebase/crmFirebase'
 import { firebaseStatsRepo } from './firebase/statsFirebase'
 import { firebaseSubscriptionsRepo } from './firebase/subscriptionsFirebase'
 import { firebaseUsersRepo } from './firebase/usersFirebase'
@@ -8,3 +10,4 @@ import type { UsersRepo } from './users'
 export const statsRepo: StatsRepo = firebaseStatsRepo
 export const subscriptionsRepo: SubscriptionsRepo = firebaseSubscriptionsRepo
 export const usersRepo: UsersRepo = firebaseUsersRepo
+export const crmRepo: CrmRepo = firebaseCrmRepo

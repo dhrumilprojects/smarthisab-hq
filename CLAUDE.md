@@ -25,7 +25,9 @@ Firebase config lives in `.env` (see `.env.example`).
 
 - Google sign-in only. HQ shares the Firebase project with the mobile app, so sign-ups can't be disabled project-wide.
 - Access is a whitelist: a Firestore doc at `hq_users/{lowercase email}` with `{ role: 'admin' | 'support' | 'sales' }`.
-- Accounts not on the whitelist are signed out right away. HQ Firestore rules live in `firebase/hq.rules` and composite indexes in `firebase/firestore.indexes.json`. Any new collection or multi-field query HQ uses needs an entry there.
+- Accounts not on the whitelist are signed out right away.
+- Roles: `admin` and `sales` can edit CRM data (stage, owner, tags, follow-up, notes); `support` can only view it. Only `admin` can delete users.
+- Firestore rules and composite indexes for HQ live in the mobile repo, in `../smart-hissab/firestore.rules` and `../smart-hissab/firestore.indexes.json` (one ruleset for the shared project). Any new collection or multi-field query HQ uses needs an entry there, plus a test in `../smart-hissab/firestore-tests/`.
 
 ## Data layer
 
@@ -56,6 +58,7 @@ src/
 - Filters are plain objects (`{ status: 'open' }`). Pagination uses a string `cursor`.
 - Real-time updates use `subscribe(filter, callback) => unsubscribe`.
 - Sensitive writes go through Cloud Functions.
+- HQ reads the app's collections but writes only its own: `crm_contacts/{userId}` (stage, owner, tags, follow-up, last contacted) and its `notes` subcollection. No doc means stage New.
 
 ## Components
 

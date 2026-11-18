@@ -46,3 +46,8 @@ export function formatUsualTime(hour: number) {
 export function daysLeft(endsAt: Date, now: number) {
   return Math.ceil((endsAt.getTime() - now) / (24 * 60 * 60 * 1000))
 }
+
+// "2026-11-15" (a date input's value) → midnight IST that day
+export function fromDayKey(value: string) {
+  return new Date(`${value}T00:00:00+05:30`)
+}

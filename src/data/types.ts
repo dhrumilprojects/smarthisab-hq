@@ -92,3 +92,36 @@ export type ActivitySummary = {
   // null until the app records it (SMA-34)
   lastActiveAt: Date | null
 }
+
+export type CrmStage = 'new' | 'contacted' | 'talked' | 'follow_up' | 'do_not_contact'
+
+export type CrmTag = 'bug' | 'feature_idea' | 'pricing' | 'confusing'
+
+// What sales tracks about one app user. Users nobody has touched get the defaults (stage New).
+export type CrmContact = {
+  stage: CrmStage
+  // HQ team member's email
+  ownerEmail: string | null
+  tags: CrmTag[]
+  // Midnight IST of the follow-up day
+  nextFollowUpAt: Date | null
+  // Set when a note is added
+  lastContactedAt: Date | null
+}
+
+// Only the fields being changed
+export type CrmContactChange = Partial<Pick<CrmContact, 'stage' | 'ownerEmail' | 'tags' | 'nextFollowUpAt'>>
+
+export type NoteOutcome = 'reached' | 'no_answer' | 'call_back'
+
+export type CrmNote = {
+  id: string
+  authorEmail: string
+  createdAt: Date
+  outcome: NoteOutcome
+  text: string
+}
+
+export type NoteInput = Pick<CrmNote, 'outcome' | 'text'>
+
+export type HqMember = { email: string; role: 'admin' | 'support' | 'sales' }
