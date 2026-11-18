@@ -1,6 +1,7 @@
 import { collection, getCountFromServer, query, Timestamp, where, type Query } from 'firebase/firestore'
 import type { StatsRepo } from '../stats'
 import { db } from './app'
+import { getActiveDayBuckets } from './segmentsFirebase'
 
 // The mobile app stores users.createdAt as an ISO string, so date filters compare ISO strings
 async function count(q: Query) {
@@ -36,6 +37,8 @@ export const firebaseStatsRepo: StatsRepo = {
       ),
     )
   },
+
+  getActiveDayBuckets,
 
   // One count query per day keeps the cost flat no matter how many people sign up
   getSignupsPerDay(days) {

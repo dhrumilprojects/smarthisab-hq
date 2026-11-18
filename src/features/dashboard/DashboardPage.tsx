@@ -5,6 +5,7 @@ import SignupsChart from './SignupsChart'
 import StatCard from './StatCard'
 import TrialsEndingList from './TrialsEndingList'
 import {
+  useActiveDayBuckets,
   useNewUsersThisMonth,
   usePaidSubscribers,
   useSignupsPerDay,
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const paid = usePaidSubscribers()
   const signups = useSignupsPerDay(30)
   const trialsEnding = useTrialsEnding(7)
+  const buckets = useActiveDayBuckets()
 
   return (
     <>
@@ -89,6 +91,42 @@ export default function DashboardPage() {
           <SignupsChart data={signups.data} loading={signups.isPending} error={signups.isError} />
         </div>
         <TrialsEndingList users={trialsEnding.data} error={trialsEnding.isError} />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Active users (3+ days in 14)"
+          value={buckets.data?.active}
+          loading={buckets.isPending}
+          error={buckets.isError}
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="2-day users (last 14 days)"
+          value={buckets.data?.twoDays}
+          loading={buckets.isPending}
+          error={buckets.isError}
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="1-day users (last 14 days)"
+          value={buckets.data?.oneDay}
+          loading={buckets.isPending}
+          error={buckets.isError}
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          }
+        />
       </div>
     </>
   )
