@@ -3,6 +3,7 @@ import { useAuth } from '../../auth/auth'
 import Avatar from '../../components/ui/Avatar'
 import SidePanel from '../../components/ui/SidePanel'
 import Tabs from '../../components/ui/Tabs'
+import CopyReportMessageButton from './CopyReportMessageButton'
 import CrmStatus from './CrmStatus'
 import DownloadReportButton from './DownloadReportButton'
 import SubscriptionBadge from './SubscriptionBadge'
@@ -47,7 +48,7 @@ export default function UserPanel({ userId, onClose }: { userId: string; onClose
                 <h2 className="truncate text-lg font-semibold text-gray-900">{user.name}</h2>
                 <SubscriptionBadge subscription={user.subscription} now={now} />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {user.phone ? (
                   <>
                     <a href={`tel:${user.phone}`} className={linkClass}>
@@ -65,7 +66,12 @@ export default function UserPanel({ userId, onClose }: { userId: string; onClose
                     Email
                   </a>
                 )}
-                {canDownload && <DownloadReportButton user={user} />}
+                {canDownload && (
+                  <>
+                    <DownloadReportButton user={user} />
+                    <CopyReportMessageButton userId={user.id} />
+                  </>
+                )}
               </div>
             </div>
             <div className="mt-3">
