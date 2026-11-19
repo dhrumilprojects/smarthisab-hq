@@ -1,4 +1,12 @@
-import type { ActivityFilter, ActivityPage, ActivitySummary, UserDetail, UserSegments, UsersPage } from './types'
+import type {
+  ActivityFilter,
+  ActivityPage,
+  ActivitySummary,
+  ReportRow,
+  UserDetail,
+  UserSegments,
+  UsersPage,
+} from './types'
 
 export type UsersRepo = {
   // Newest first, 25 per page. Pass the previous page's nextCursor to get the next page.
@@ -16,4 +24,8 @@ export type UsersRepo = {
   // Every user sorted into the four filters at once, so the page can show a count for each.
   // Reads all users, so cache the result.
   getUserSegments(): Promise<UserSegments>
+  countUserProjects(id: string): Promise<number>
+  // Every client payment and expense on the user's projects, sorted by project, then date (oldest first).
+  // Projects with neither get one bare row.
+  getUserReport(id: string): Promise<ReportRow[]>
 }
