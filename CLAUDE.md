@@ -79,6 +79,12 @@ One-line messages with a prefix:
 - `enhancement:` improvement to something that exists
 - `fix:` bug fix
 
+## Releases
+
+- The version lives in `package.json` only and shows in the sidebar.
+- Every release adds an entry at the top of `RELEASE_NOTES.md` (New, Fixed, Known issues), written for the HQ team, not developers.
+- Release steps: bump with `npm version <x.y.z> --no-git-tag-version`, update the notes, commit both as `release: vX.Y.Z`, then `npm run deploy`.
+
 ## Keep it simple
 
 - Build only what's needed now.
