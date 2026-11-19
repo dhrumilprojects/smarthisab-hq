@@ -40,6 +40,8 @@ export default function Sidebar() {
           Activity
         </NavLink>
       </nav>
+
+      <p className="px-5 py-3 text-xs text-gray-400">v{__APP_VERSION__}</p>
     </aside>
   )
 }
