@@ -70,17 +70,20 @@ export default function SignupsChart({ data, loading, error }: Props) {
             <span>Today</span>
           </div>
 
-          <table className="sr-only">
-            <caption>New users per day</caption>
-            <tbody>
-              {data.map((d) => (
-                <tr key={d.date.toISOString()}>
-                  <td>{formatDay(d.date)}</td>
-                  <td>{d.count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* sr-only goes on a div: tables ignore the 1px height and overflow clip */}
+          <div className="sr-only">
+            <table>
+              <caption>New users per day</caption>
+              <tbody>
+                {data.map((d) => (
+                  <tr key={d.date.toISOString()}>
+                    <td>{formatDay(d.date)}</td>
+                    <td>{d.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </Card>
