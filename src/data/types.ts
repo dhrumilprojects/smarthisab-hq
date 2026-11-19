@@ -58,6 +58,35 @@ export type UserDetail = {
   missingProfile: ProfileField[]
 }
 
+export type ExpenseCategory = 'labour' | 'material' | 'rent' | 'others'
+
+// One line of a user's report. Unlike the rest of HQ it holds amounts and people's names,
+// because the report goes back to that same user.
+export type ReportRow = {
+  projectId: string
+  projectName: string
+  quotationValue: number
+} & (
+  // A project with no client payments or expenses yet
+  | { kind: 'project' }
+  // date: midnight IST of the day it happened. null when the app saved a date HQ can't read.
+  | { kind: 'income'; date: Date | null; amount: number }
+  | {
+      kind: 'expense'
+      date: Date | null
+      category: ExpenseCategory
+      // Vendor, labourer or other payee
+      payee: string
+      amount: number
+      // Same rule as the app: linked payments, else the advance
+      paid: number
+      // Latest linked payment's date, or the expense's date when only an advance was paid. null when nothing is paid.
+      paidDate: Date | null
+      // amount − paid, never below 0
+      toPay: number
+    }
+)
+
 export type ActivityKind = 'project' | 'expense' | 'income' | 'vendor' | 'labour' | 'plan'
 
 // Leave out `type` for everything

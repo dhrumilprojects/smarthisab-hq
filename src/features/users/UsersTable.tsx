@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useAuth } from '../../auth/auth'
 import Avatar from '../../components/ui/Avatar'
 import Button from '../../components/ui/Button'
 import Table from '../../components/ui/Table'
 import type { CrmStage, User } from '../../data/types'
+import DownloadReportButton from './DownloadReportButton'
 import StageBadge from './StageBadge'
 import SubscriptionBadge from './SubscriptionBadge'
 
@@ -21,9 +23,22 @@ type Props = {
 
 export default function UsersTable({ users, stages, onOpen, selectedId, onDelete, deletingId }: Props) {
   const [now] = useState(Date.now)
+  const hqUser = useAuth()
+  const canDownload = hqUser?.role === 'admin' || hqUser?.role === 'sales'
 
   return (
-    <Table columns={['Name', 'Subscription', 'Stage', 'Email', 'Phone', 'Joined', ...(onDelete ? [''] : [])]}>
+    <Table
+      columns={[
+        'Name',
+        'Subscription',
+        'Stage',
+        'Email',
+        'Phone',
+        'Joined',
+        ...(canDownload ? ['Report'] : []),
+        ...(onDelete ? [''] : []),
+      ]}
+    >
       {users.map((user) => (
         <tr
           key={user.id}
@@ -68,6 +83,11 @@ export default function UsersTable({ users, stages, onOpen, selectedId, onDelete
           <td className="px-5 py-3 whitespace-nowrap text-gray-600">
             {user.createdAt?.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) ?? '—'}
           </td>
+          {canDownload && (
+            <td className="px-5 py-3">
+              <DownloadReportButton user={user} iconOnly />
+            </td>
+          )}
           {onDelete && (
             <td className="px-5 py-3 text-right">
               <Button variant="danger" onClick={() => onDelete(user)} disabled={deletingId !== undefined}>

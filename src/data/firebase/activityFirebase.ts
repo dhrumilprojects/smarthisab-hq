@@ -70,7 +70,7 @@ function istDay(ms: number) {
 }
 
 // "15/11/2026" (or "15/11/26") as midnight IST
-function parseDay(value: string | undefined) {
+export function parseDay(value: string | undefined) {
   const match = value?.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
   if (!match) return null
   const year = Number(match[3]) < 100 ? Number(match[3]) + 2000 : Number(match[3])

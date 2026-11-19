@@ -16,6 +16,7 @@ import { z } from 'zod'
 import type { UsersRepo } from '../users'
 import { getUserActivity, getUserActivitySummary } from './activityFirebase'
 import { db, functions } from './app'
+import { countUserProjects, getUserReport } from './reportFirebase'
 import { getUserSegments } from './segmentsFirebase'
 import { toSubscription } from './subscription'
 import { toUser, userSchema } from './user'
@@ -104,4 +105,6 @@ export const firebaseUsersRepo: UsersRepo = {
   getUserActivitySummary,
   getUserActivity,
   getUserSegments,
+  countUserProjects,
+  getUserReport,
 }
