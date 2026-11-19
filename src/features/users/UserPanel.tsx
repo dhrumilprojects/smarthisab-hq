@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useAuth } from '../../auth/auth'
 import Avatar from '../../components/ui/Avatar'
 import SidePanel from '../../components/ui/SidePanel'
 import Tabs from '../../components/ui/Tabs'
 import CrmStatus from './CrmStatus'
+import DownloadReportButton from './DownloadReportButton'
 import SubscriptionBadge from './SubscriptionBadge'
 import UserActivityTab from './UserActivityTab'
 import UserDetailsTab from './UserDetailsTab'
@@ -25,6 +27,8 @@ export default function UserPanel({ userId, onClose }: { userId: string; onClose
   const [now] = useState(Date.now)
   const { data: user, isError } = useUserDetail(userId)
   const notes = useNotes(userId)
+  const hqUser = useAuth()
+  const canDownload = hqUser?.role === 'admin' || hqUser?.role === 'sales'
 
   return (
     <SidePanel label={user?.name ?? 'User'} onClose={onClose}>
@@ -61,6 +65,7 @@ export default function UserPanel({ userId, onClose }: { userId: string; onClose
                     Email
                   </a>
                 )}
+                {canDownload && <DownloadReportButton user={user} />}
               </div>
             </div>
             <div className="mt-3">

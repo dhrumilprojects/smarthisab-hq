@@ -1,6 +1,7 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usersRepo } from '../../data'
 import type { ActivityFilter, UserSegment, UserSegments } from '../../data/types'
+import { downloadReport } from './reportExcel'
 import { ACTIVE_DAY_SEGMENTS } from './segments'
 import { useDoNotContactIds } from './useCrm'
 
@@ -55,6 +56,18 @@ export function useDeleteUser() {
 
 export function useUserDetail(id: string) {
   return useQuery({ queryKey: ['user', id, 'detail'], queryFn: () => usersRepo.getUserDetail(id) })
+}
+
+export function useUserProjectCount(id: string) {
+  return useQuery({ queryKey: ['user', id, 'projectCount'], queryFn: () => usersRepo.countUserProjects(id) })
+}
+
+// Reads fresh each time, so the file always has the latest records
+export function useDownloadReport() {
+  return useMutation({
+    mutationFn: async (user: { id: string; name: string }) =>
+      downloadReport(user.name, await usersRepo.getUserReport(user.id)),
+  })
 }
 
 export function useUserActivitySummary(id: string) {
