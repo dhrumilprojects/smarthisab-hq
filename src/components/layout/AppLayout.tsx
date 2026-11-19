@@ -8,11 +8,11 @@ export default function AppLayout() {
   const user = useAuth()
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 items-center gap-4 border-b border-gray-200 bg-white px-6">
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-4 border-b border-gray-200 bg-white px-6">
           <img src="/logo.png" alt="Smart Hisaab HQ" className="size-8 md:hidden" />
           <div className="ml-auto flex items-center gap-3">
             {user && <Avatar name={user.name} photoUrl={user.photoUrl} />}
