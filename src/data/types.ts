@@ -84,6 +84,8 @@ export type ReportRow = {
       paidDate: Date | null
       // amount − paid, never below 0
       toPay: number
+      // What makes up `paid`: each linked payment, or the advance on the expense's date when there are none
+      payouts: { date: Date | null; amount: number }[]
     }
 )
 

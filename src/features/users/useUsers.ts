@@ -2,6 +2,7 @@ import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClie
 import { usersRepo } from '../../data'
 import type { ActivityFilter, UserSegment, UserSegments } from '../../data/types'
 import { downloadReport } from './reportExcel'
+import { istToday, summarize, whatsappMessage } from './reportSummary'
 import { ACTIVE_DAY_SEGMENTS } from './segments'
 import { useDoNotContactIds } from './useCrm'
 
@@ -67,6 +68,17 @@ export function useDownloadReport() {
   return useMutation({
     mutationFn: async (user: { id: string; name: string }) =>
       downloadReport(user.name, await usersRepo.getUserReport(user.id)),
+  })
+}
+
+// Fetches fresh too, so the message matches a file downloaded at the same time
+export function useCopyReportMessage() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const rows = await usersRepo.getUserReport(id)
+      const today = istToday()
+      await navigator.clipboard.writeText(whatsappMessage(summarize(rows, today), today))
+    },
   })
 }
 

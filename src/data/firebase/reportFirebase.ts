@@ -72,12 +72,16 @@ export async function getUserReport(userId: string): Promise<ReportRow[]> {
     if (!parsed.success || !projects[parsed.data.projectId]) continue
     const expense = parsed.data
 
-    const linked = payments.filter((payment) => payment.expenseId === expenseDoc.id)
+    const date = parseDay(expense.date)
+    const linked = payments
+      .filter((payment) => payment.expenseId === expenseDoc.id)
+      .map((payment) => ({ date: parseDay(payment.date), amount: payment.amount }))
     const paidFromPayments = linked.reduce((sum, payment) => sum + payment.amount, 0)
     // Same rule as getExpensePaid in the app (lib/project-metrics.ts), so the report matches what the user sees
-    const paid = paidFromPayments > 0 ? paidFromPayments : expense.advancePaid || 0
-    const date = parseDay(expense.date)
-    const latestPayment = Math.max(0, ...linked.map((payment) => parseDay(payment.date)?.getTime() ?? 0))
+    const payouts =
+      paidFromPayments > 0 ? linked : expense.advancePaid ? [{ date, amount: expense.advancePaid }] : []
+    const paid = payouts.reduce((sum, payout) => sum + payout.amount, 0)
+    const latestPayment = Math.max(0, ...linked.map((payment) => payment.date?.getTime() ?? 0))
     const payee =
       expense.category === 'material'
         ? expense.vendorName
@@ -95,6 +99,7 @@ export async function getUserReport(userId: string): Promise<ReportRow[]> {
       paid,
       paidDate: paidFromPayments > 0 ? (latestPayment ? new Date(latestPayment) : null) : paid > 0 ? date : null,
       toPay: Math.max(0, expense.amount - paid),
+      payouts,
     })
   }
 
